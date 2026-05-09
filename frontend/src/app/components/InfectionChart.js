@@ -7,27 +7,28 @@ import {
 /**
  * InfectionChart Component
  * 
- * Renders an area chart showing SIR (Susceptible-Infected-Recovered) curves
+ * Renders an area chart showing Healthy-Infected-Deceased curves
  * over time during pandemic mode.
+ * 
+ * Simplified model: no Susceptible/Recovered — only 3 compartments.
  * 
  * @param {Array} statistics - Array of daily statistic records
  */
 export default function InfectionChart({ statistics = [] }) {
-  // Extract pandemic SIR data from statistics
+  // Extract pandemic data from statistics
   const chartData = statistics
     .filter((s) => s.pandemic?.sir)
     .map((s) => ({
       day: s.day,
-      Susceptible: s.pandemic.sir.susceptible,
+      Healthy: s.pandemic.sir.healthy,
       Infected: s.pandemic.sir.infected,
-      Recovered: s.pandemic.sir.recovered,
       Deceased: s.pandemic.sir.deceased,
     }));
 
   if (chartData.length === 0) {
     return (
       <div className="chart-card" id="infection-chart">
-        <h3>🦠 Infection Curves (SIR Model)</h3>
+        <h3>🦠 Infection Curves</h3>
         <div className="empty-state">
           <div className="empty-state-icon">📈</div>
           <h3>No pandemic data</h3>
@@ -61,21 +62,17 @@ export default function InfectionChart({ statistics = [] }) {
 
   return (
     <div className="chart-card" id="infection-chart">
-      <h3>🦠 Infection Curves (SIR Model)</h3>
+      <h3>🦠 Infection Curves</h3>
       <ResponsiveContainer width="100%" height={320}>
         <AreaChart data={chartData}>
           <defs>
-            <linearGradient id="colorSusceptible" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+            <linearGradient id="colorHealthy" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="colorInfected" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
               <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
-            </linearGradient>
-            <linearGradient id="colorRecovered" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="colorDeceased" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#6b7280" stopOpacity={0.3} />
@@ -98,16 +95,12 @@ export default function InfectionChart({ statistics = [] }) {
             wrapperStyle={{ fontSize: "12px", paddingTop: "8px" }}
           />
           <Area
-            type="monotone" dataKey="Susceptible" stroke="#f59e0b"
-            fillOpacity={1} fill="url(#colorSusceptible)" strokeWidth={2}
+            type="monotone" dataKey="Healthy" stroke="#10b981"
+            fillOpacity={1} fill="url(#colorHealthy)" strokeWidth={2}
           />
           <Area
             type="monotone" dataKey="Infected" stroke="#ef4444"
             fillOpacity={1} fill="url(#colorInfected)" strokeWidth={2}
-          />
-          <Area
-            type="monotone" dataKey="Recovered" stroke="#10b981"
-            fillOpacity={1} fill="url(#colorRecovered)" strokeWidth={2}
           />
           <Area
             type="monotone" dataKey="Deceased" stroke="#6b7280"

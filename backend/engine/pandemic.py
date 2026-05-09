@@ -1,8 +1,7 @@
 """
-Pandemic Engine — SIR Model
+Pandemic Engine
 ============================
-Implements a Susceptible-Infected-Recovered (SIR) epidemiological model
-for simulating disease spread during pandemic mode.
+Implements infection spread logic for pandemic mode.
 
 Demonstrates:
 - List comprehension for population state tracking
@@ -20,24 +19,20 @@ if TYPE_CHECKING:
 
 class PandemicEngine:
     """
-    Manages pandemic-specific logic including infection spread,
-    recovery tracking, and SIR model calculations.
+    Manages pandemic-specific logic including infection spread
+    and population health tracking.
 
     Attributes:
         total_infections (int): Cumulative total infections.
-        total_recoveries (int): Cumulative total recoveries.
         total_deaths (int): Cumulative total deaths.
         daily_new_infections (int): New infections in the current tick.
-        daily_new_recoveries (int): New recoveries in the current tick.
         daily_new_deaths (int): New deaths in the current tick.
     """
 
     def __init__(self):
         self.total_infections: int = 0
-        self.total_recoveries: int = 0
         self.total_deaths: int = 0
         self.daily_new_infections: int = 0
-        self.daily_new_recoveries: int = 0
         self.daily_new_deaths: int = 0
 
     def seed_infection(self, patients: list, count: int = 5) -> list[str]:
@@ -63,7 +58,7 @@ class PandemicEngine:
 
     def spread_infection(self, patients: list, mode: "SimulationMode") -> dict:
         """
-        Simulate one tick of infection spread using SIR dynamics.
+        Simulate one tick of infection spread.
 
         Uses:
         - filter() to identify susceptible populations
@@ -73,10 +68,9 @@ class PandemicEngine:
             dict: Summary of spread results for this tick.
         """
         self.daily_new_infections = 0
-        self.daily_new_recoveries = 0
         self.daily_new_deaths = 0
 
-        # filter() to get susceptible patients (healthy, not deceased)
+        # filter() to get susceptible patients (healthy)
         susceptible = list(filter(
             lambda p: p.health_status == "Healthy",
             patients
@@ -94,13 +88,10 @@ class PandemicEngine:
         previous_statuses = {p.id: p.health_status for p in patients}
         list(map(lambda p: p.update_health(is_pandemic=mode.is_pandemic), patients))
 
-        # Count recoveries and deaths from status changes
+        # Count deaths from status changes
         for patient in patients:
             prev = previous_statuses.get(patient.id)
-            if prev != "Recovered" and patient.health_status == "Recovered":
-                self.daily_new_recoveries += 1
-                self.total_recoveries += 1
-            elif prev != "Deceased" and patient.health_status == "Deceased":
+            if prev != "Deceased" and patient.health_status == "Deceased":
                 self.daily_new_deaths += 1
                 self.total_deaths += 1
 
@@ -108,21 +99,19 @@ class PandemicEngine:
 
     def get_sir_counts(self, patients: list) -> dict:
         """
-        Calculate current SIR compartment counts.
+        Calculate current health compartment counts.
         Uses list comprehension for categorization.
 
         Returns:
-            dict: Counts for S, I, R compartments.
+            dict: Counts for healthy, infected, deceased compartments.
         """
-        susceptible = len([p for p in patients if p.health_status == "Healthy"])
+        healthy = len([p for p in patients if p.health_status == "Healthy"])
         infected = len([p for p in patients if p.health_status == "Infected"])
-        recovered = len([p for p in patients if p.health_status == "Recovered"])
         deceased = len([p for p in patients if p.health_status == "Deceased"])
 
         return {
-            "susceptible": susceptible,
+            "healthy": healthy,
             "infected": infected,
-            "recovered": recovered,
             "deceased": deceased,
             "total": len(patients),
         }
@@ -133,29 +122,23 @@ class PandemicEngine:
         return {
             "sir": sir,
             "daily_new_infections": self.daily_new_infections,
-            "daily_new_recoveries": self.daily_new_recoveries,
             "daily_new_deaths": self.daily_new_deaths,
             "total_infections": self.total_infections,
-            "total_recoveries": self.total_recoveries,
             "total_deaths": self.total_deaths,
         }
 
     def reset(self) -> None:
         """Reset all pandemic tracking counters."""
         self.total_infections = 0
-        self.total_recoveries = 0
         self.total_deaths = 0
         self.daily_new_infections = 0
-        self.daily_new_recoveries = 0
         self.daily_new_deaths = 0
 
     def to_dict(self) -> dict:
         """Serialize the pandemic engine state."""
         return {
             "total_infections": self.total_infections,
-            "total_recoveries": self.total_recoveries,
             "total_deaths": self.total_deaths,
             "daily_new_infections": self.daily_new_infections,
-            "daily_new_recoveries": self.daily_new_recoveries,
             "daily_new_deaths": self.daily_new_deaths,
         }

@@ -6,7 +6,9 @@ import { useState, useMemo } from "react";
  * PatientTable Component
  * 
  * Renders a sortable, filterable table of all patients.
- * Shows name, age, gender, health status, infection status, and facility.
+ * Shows name, age, gender, health status, immunity, treatments, and facility.
+ * 
+ * Health statuses: Healthy, Infected, Deceased (simplified 3-status model)
  * 
  * @param {Array} patients - Array of patient data objects
  * @param {Array} hospitals - Array of hospital data (for name lookup)
@@ -26,7 +28,6 @@ export default function PatientTable({ patients = [], hospitals = [] }) {
   // Filter patients by status
   const filtered = useMemo(() => {
     if (filter === "All") return patients;
-    if (filter === "Infected") return patients.filter((p) => p.infected);
     if (filter === "Admitted") return patients.filter((p) => p.admitted);
     return patients.filter((p) => p.health_status === filter);
   }, [patients, filter]);
@@ -53,7 +54,7 @@ export default function PatientTable({ patients = [], hospitals = [] }) {
     }
   };
 
-  const statuses = ["All", "Healthy", "Mild", "Severe", "Critical", "Recovered", "Deceased", "Infected", "Admitted"];
+  const statuses = ["All", "Healthy", "Infected", "Deceased", "Admitted"];
 
   const getStatusClass = (status) => status?.toLowerCase() || "";
 
@@ -94,8 +95,8 @@ export default function PatientTable({ patients = [], hospitals = [] }) {
                 { key: "age", label: "Age" },
                 { key: "gender", label: "Gender" },
                 { key: "health_status", label: "Status" },
-                { key: "infected", label: "Infected" },
                 { key: "immunity", label: "Immunity" },
+                { key: "treatments_received", label: "Treatments" },
                 { key: "admitted", label: "Facility" },
               ].map((col) => (
                 <th
@@ -120,20 +121,24 @@ export default function PatientTable({ patients = [], hospitals = [] }) {
                   </span>
                 </td>
                 <td>
-                  {p.infected ? (
-                    <span className="status-badge infected">Yes</span>
-                  ) : (
-                    <span style={{ color: "var(--text-muted)" }}>No</span>
-                  )}
-                </td>
-                <td>
                   <span style={{
-                    color: p.immunity >= 0.7 ? "var(--green)" :
-                           p.immunity >= 0.4 ? "var(--amber)" : "var(--red)",
+                    color: p.immunity >= 0.5 ? "var(--green)" :
+                           p.immunity >= 0.3 ? "var(--amber)" : "var(--red)",
                     fontWeight: 600,
                   }}>
                     {Math.round(p.immunity * 100)}%
                   </span>
+                </td>
+                <td>
+                  {p.health_status === "Infected" && p.treatments_received > 0 ? (
+                    <span className="status-badge infected">
+                      {p.treatments_received} / 2
+                    </span>
+                  ) : p.health_status === "Infected" ? (
+                    <span style={{ color: "var(--text-muted)" }}>Awaiting</span>
+                  ) : (
+                    <span style={{ color: "var(--text-muted)" }}>—</span>
+                  )}
                 </td>
                 <td>
                   {p.admitted ? (

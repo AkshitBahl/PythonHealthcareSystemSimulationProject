@@ -8,6 +8,13 @@ Demonstrates:
 - Multiple instantiation (50+ Patients, 12 Doctors)
 - List comprehension for filtering
 - Encapsulation of health state logic
+
+Health System:
+- 3 statuses: Healthy, Infected, Deceased
+- Treatment: doctor gives up to 2 treatments (+0.10 immunity each)
+- If immunity > 0.50 after treatment → Healthy (immunity resets)
+- If 2 treatments fail → Deceased
+- Unadmitted infected patients die after 10 days
 """
 
 import uuid
@@ -54,16 +61,22 @@ class Patient(Person):
     attributes and methods for admission, discharge, and health updates.
 
     Attributes:
-        health_status (str): Current status — 'Healthy', 'Infected', 'Recovered', 'Deceased'.
+        health_status (str): Current status — 'Healthy', 'Infected', 'Deceased'.
         days_infected (int): Number of days the patient has been infected.
         assigned_facility (str | None): ID of the facility the patient is assigned to.
         assigned_doctor (str | None): ID of the assigned doctor.
-        immunity (float): Immunity level 0.0 – 1.0 (affects infection/recovery chance).
+        immunity (float): Immunity level 0.10 – 0.50 (determines treatment outcome).
         admitted (bool): Whether the patient is currently admitted to a facility.
+        treatments_received (int): Number of treatments received for current infection.
     """
 
-    # Four simple health statuses
-    HEALTH_STATUSES = ["Healthy", "Infected", "Recovered", "Deceased"]
+    # Three health statuses
+    HEALTH_STATUSES = ["Healthy", "Infected", "Deceased"]
+
+    # Treatment constants
+    IMMUNITY_THRESHOLD = 0.50
+    MAX_TREATMENTS = 2
+    DAYS_UNTIL_DEATH_UNADMITTED = 10
 
     def __init__(self, name: str, age: int, gender: str, contact: str = ""):
         super().__init__(name, age, gender, contact)
@@ -71,8 +84,9 @@ class Patient(Person):
         self.days_infected: int = 0
         self.assigned_facility: Optional[str] = None
         self.assigned_doctor: Optional[str] = None
-        self.immunity: float = round(random.uniform(0.3, 0.9), 2)
+        self.immunity: float = round(random.uniform(0.10, 0.50), 2)
         self.admitted: bool = False
+        self.treatments_received: int = 0
 
     def admit(self, facility_id: str, doctor_id: str) -> None:
         """Admit the patient to a facility under a doctor's care."""
@@ -91,13 +105,16 @@ class Patient(Person):
         if self.health_status not in ("Infected", "Deceased"):
             self.health_status = "Infected"
             self.days_infected = 0
+            self.treatments_received = 0
 
     def update_health(self, is_pandemic: bool = False) -> str:
         """
         Update the patient's health for the current simulation tick.
 
-        In normal mode: small random chance of getting infected or recovering.
-        In pandemic mode: higher infection chance, slower recovery.
+        - Deceased: no change.
+        - Healthy: random chance of getting infected (higher in pandemic).
+        - Infected + unadmitted: die after 10 days without treatment.
+        - Infected + admitted: no change here (treatment handled by doctor).
 
         Returns:
             str: The updated health status.
@@ -107,14 +124,8 @@ class Patient(Person):
 
         if self.health_status == "Infected":
             self.days_infected += 1
-            recovery_chance = self.immunity * 0.2
-            mortality_rate = 0.03 if self.admitted else 0.08
-            if self.age > 60:
-                mortality_rate *= 1.5
-
-            if random.random() < recovery_chance:
-                self._recover()
-            elif random.random() < mortality_rate:
+            # Unadmitted infected patients die after 10 days
+            if not self.admitted and self.days_infected >= self.DAYS_UNTIL_DEATH_UNADMITTED:
                 self.health_status = "Deceased"
 
         elif self.health_status == "Healthy":
@@ -124,11 +135,34 @@ class Patient(Person):
 
         return self.health_status
 
-    def _recover(self) -> None:
-        """Internal method: recover the patient from infection."""
-        self.health_status = "Recovered"
-        self.days_infected = 0
-        self.immunity = min(1.0, self.immunity + 0.2)  # Boost immunity after recovery
+    def treat(self) -> str:
+        """
+        Apply one treatment to the patient.
+
+        Each treatment: +0.10 immunity. If immunity exceeds threshold (0.50)
+        the patient becomes Healthy (immunity resets). If 2 treatments fail
+        to cross the threshold, the patient is Deceased.
+
+        Returns:
+            str: The updated health status after treatment.
+        """
+        if self.health_status != "Infected":
+            return self.health_status
+
+        self.treatments_received += 1
+        self.immunity = round(self.immunity + 0.10, 2)
+
+        if self.immunity > self.IMMUNITY_THRESHOLD:
+            # Treatment succeeded — patient recovers
+            self.health_status = "Healthy"
+            self.days_infected = 0
+            self.treatments_received = 0
+            self.immunity = round(random.uniform(0.10, 0.50), 2)
+        elif self.treatments_received >= self.MAX_TREATMENTS:
+            # Two treatments failed — patient dies
+            self.health_status = "Deceased"
+
+        return self.health_status
 
     def to_dict(self) -> dict:
         """Serialize the patient to a dictionary for API responses."""
@@ -140,6 +174,7 @@ class Patient(Person):
             "assigned_facility": self.assigned_facility,
             "assigned_doctor": self.assigned_doctor,
             "immunity": self.immunity,
+            "treatments_received": self.treatments_received,
         })
         return info
 

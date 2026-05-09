@@ -9,6 +9,7 @@ import { useSimulation } from "../hooks/useSimulation";
  * Patients Page
  * 
  * Full patient registry with filtering, sorting, and status overview stats.
+ * Uses simplified 3-status model: Healthy, Infected, Deceased.
  */
 export default function PatientsPage() {
   const { data, connected, toggleMode, startSim, stopSim, tickSim } = useSimulation();
@@ -27,12 +28,11 @@ export default function PatientsPage() {
   const patients = data.patients || [];
   const hospitals = data.hospitals || [];
 
-  // Count per-status
+  // Count per-status (Healthy, Infected, Deceased)
   const counts = {};
   patients.forEach((p) => {
     counts[p.health_status] = (counts[p.health_status] || 0) + 1;
   });
-  const infectedCount = patients.filter((p) => p.infected).length;
   const admittedCount = patients.filter((p) => p.admitted).length;
   const avgImmunity = patients.length
     ? Math.round((patients.reduce((s, p) => s + p.immunity, 0) / patients.length) * 100)
@@ -50,11 +50,9 @@ export default function PatientsPage() {
         {/* Summary Stats */}
         <div className="stats-grid stagger-children">
           <StatCard icon="💚" label="Healthy" value={counts.Healthy || 0} sub="No conditions" color="green" />
-          <StatCard icon="🤒" label="Mild" value={counts.Mild || 0} sub="Outpatient care" color="amber" />
-          <StatCard icon="🏥" label="Severe" value={counts.Severe || 0} sub="Hospitalized" color="red" />
-          <StatCard icon="🚨" label="Critical" value={counts.Critical || 0} sub="ICU required" color="red" />
-          <StatCard icon="💙" label="Recovered" value={counts.Recovered || 0} sub="Post-illness" color="blue" />
-          <StatCard icon="🛡️" label="Avg Immunity" value={`${avgImmunity}%`} sub={`${infectedCount} infected · ${admittedCount} admitted`} color="purple" />
+          <StatCard icon="🦠" label="Infected" value={counts.Infected || 0} sub={`${admittedCount} admitted for treatment`} color="red" />
+          <StatCard icon="💀" label="Deceased" value={counts.Deceased || 0} sub="Fatalities" color="purple" />
+          <StatCard icon="🛡️" label="Avg Immunity" value={`${avgImmunity}%`} sub={`Threshold: 50% to recover`} color="cyan" />
         </div>
 
         {/* Patient Table */}

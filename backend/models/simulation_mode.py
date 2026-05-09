@@ -15,8 +15,6 @@ class SimulationMode:
     Attributes:
         mode (str): Current mode — 'normal' or 'pandemic'.
         infection_rate (float): Base probability of infection per tick.
-        recovery_rate (float): Base probability of recovery per tick.
-        mortality_rate (float): Base mortality rate for infected patients.
         surge_capacity_multiplier (float): Multiplier for hospital bed capacity.
     """
 
@@ -24,14 +22,10 @@ class SimulationMode:
     MODE_PARAMS = {
         "normal": {
             "infection_rate": 0.02,
-            "recovery_rate": 0.15,
-            "mortality_rate": 0.02,
             "surge_capacity_multiplier": 1.0,
         },
         "pandemic": {
             "infection_rate": 0.12,
-            "recovery_rate": 0.08,
-            "mortality_rate": 0.05,
             "surge_capacity_multiplier": 1.5,
         },
     }
@@ -40,8 +34,6 @@ class SimulationMode:
         self.mode: str = mode
         params = self.MODE_PARAMS[mode]
         self.infection_rate: float = params["infection_rate"]
-        self.recovery_rate: float = params["recovery_rate"]
-        self.mortality_rate: float = params["mortality_rate"]
         self.surge_capacity_multiplier: float = params["surge_capacity_multiplier"]
 
     @property
@@ -63,8 +55,6 @@ class SimulationMode:
         self.mode = mode
         params = self.MODE_PARAMS[mode]
         self.infection_rate = params["infection_rate"]
-        self.recovery_rate = params["recovery_rate"]
-        self.mortality_rate = params["mortality_rate"]
         self.surge_capacity_multiplier = params["surge_capacity_multiplier"]
 
     def to_dict(self) -> dict:
@@ -73,8 +63,6 @@ class SimulationMode:
             "mode": self.mode,
             "is_pandemic": self.is_pandemic,
             "infection_rate": self.infection_rate,
-            "recovery_rate": self.recovery_rate,
-            "mortality_rate": self.mortality_rate,
             "surge_capacity_multiplier": self.surge_capacity_multiplier,
         }
 

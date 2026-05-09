@@ -10,6 +10,7 @@ Demonstrates:
 - filter() for patient selection
 - reduce() for aggregate calculations
 - List comprehension throughout
+- Deterministic treatment system (2 treatments, threshold 0.50)
 """
 
 import random
@@ -145,8 +146,8 @@ class HealthcareSimulation:
 
         1. Updates patient health states (using map())
         2. Handles admissions for infected patients (using filter())
-        3. Handles discharges for recovered/deceased patients
-        4. Dispenses medications from pharmacies
+        3. Treats admitted infected patients (doctor + pharmacy)
+        4. Handles discharges for healthy/deceased patients
         5. In pandemic mode: runs infection spread
         6. Records statistics
 
@@ -189,18 +190,18 @@ class HealthcareSimulation:
         for patient in needs_admission:
             self._try_admit_patient(patient)
 
+        # --- Treat admitted infected patients ---
+        self._treat_patients()
+
         # --- Handle discharges ---
         # filter() to find patients who can be discharged
         can_discharge = list(filter(
-            lambda p: p.admitted and p.health_status in ("Healthy", "Recovered", "Deceased"),
+            lambda p: p.admitted and p.health_status in ("Healthy", "Deceased"),
             self.patients
         ))
 
         for patient in can_discharge:
             self._discharge_patient(patient)
-
-        # --- Dispense daily medications ---
-        self._dispense_medications()
 
         # --- Record statistics ---
         self._record_stats(pandemic_result)
@@ -233,8 +234,6 @@ class HealthcareSimulation:
                 if hospital.admit_patient(patient.id):
                     patient.admit(hospital.id, doctor.id)
                     doctor.assign_patient(patient.id)
-                    doctor.diagnose(patient)
-                    self._dispense_medications_for_patient(patient)
                     return True
         return False
 
@@ -248,22 +247,34 @@ class HealthcareSimulation:
                 doctor.remove_patient(patient.id)
             patient.discharge()
 
-    def _dispense_medications_for_patient(self, patient: Patient) -> None:
-        """Automatically deduct a medication from a connected pharmacy."""
+    def _treat_patients(self) -> None:
+        """
+        Treat all admitted infected patients.
+
+        Each treatment: doctor's assigned patient gets 1 medicine from
+        pharmacy, immunity +0.10. After up to 2 treatments, patient
+        becomes Healthy (immunity > 0.50) or Deceased.
+
+        Uses filter() to find patients needing treatment.
+        """
+        # filter() to find admitted infected patients
+        admitted_infected = list(filter(
+            lambda p: p.admitted and p.health_status == "Infected",
+            self.patients
+        ))
+
+        for patient in admitted_infected:
+            # Dispense 1 medication from a pharmacy
+            self._dispense_medication_for_patient(patient)
+            # Apply treatment (immunity boost + threshold check)
+            patient.treat()
+
+    def _dispense_medication_for_patient(self, patient: Patient) -> None:
+        """Dispense one medication from a pharmacy for a patient's treatment."""
         if self.pharmacies:
             med_name = random.choice(MEDICATIONS)
             pharmacy = random.choice(self.pharmacies)
             pharmacy.fill_prescription(med_name)
-
-    def _dispense_medications(self) -> None:
-        """Daily loop to deduct medications for currently infected patients."""
-        # filter() to find infected patients
-        sick_patients = list(filter(
-            lambda p: p.health_status == "Infected",
-            self.patients
-        ))
-        for p in sick_patients:
-            self._dispense_medications_for_patient(p)
 
     def _find_hospital(self, hospital_id: str | None) -> Hospital | None:
         """Find a hospital by ID."""

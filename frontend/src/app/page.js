@@ -61,7 +61,7 @@ export default function DashboardPage() {
   patients.forEach((p) => {
     statusCounts[p.health_status] = (statusCounts[p.health_status] || 0) + 1;
   });
-  const infectedCount = patients.filter((p) => p.infected).length;
+  const infectedCount = statusCounts.Infected || 0;
   const admittedCount = patients.filter((p) => p.admitted).length;
 
   return (
@@ -92,21 +92,21 @@ export default function DashboardPage() {
             icon="👥"
             label="Total Patients"
             value={overview.total_patients}
-            sub={`${admittedCount} admitted · ${statusCounts.Healthy || 0} healthy`}
+            sub={`${admittedCount} admitted · ${statusCounts.Healthy || 0} healthy · ${statusCounts.Deceased || 0} deceased`}
             color="blue"
           />
           <StatCard
             icon="🛏️"
             label="Bed Occupancy"
             value={`${overview.overall_occupancy || 0}%`}
-            sub={`${overview.total_occupied_beds || 0} / ${overview.total_capacity || 0} beds`}
+            sub={`${overview.total_occupied_beds || 0} / ${overview.total_beds || 0} beds`}
             color={overview.overall_occupancy >= 80 ? "red" : overview.overall_occupancy >= 50 ? "amber" : "green"}
           />
           <StatCard
             icon="🦠"
             label="Active Infections"
             value={infectedCount}
-            sub={mode.is_pandemic ? `${sir?.recovered || 0} recovered · ${sir?.deceased || 0} deceased` : "Normal operations"}
+            sub={mode.is_pandemic ? `${sir?.healthy || 0} healthy · ${sir?.deceased || 0} deceased` : "Normal operations"}
             color={infectedCount > 0 ? "red" : "green"}
           />
           <StatCard

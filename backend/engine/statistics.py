@@ -43,7 +43,7 @@ class StatisticsCollector:
         # List comprehension to count each health status
         status_counts = {
             status: len([p for p in patients if p.health_status == status])
-            for status in ["Healthy", "Infected", "Recovered", "Deceased"]
+            for status in ["Healthy", "Infected", "Deceased"]
         }
         infected_count = len([p for p in patients if p.health_status == "Infected"])
         admitted_count = len([p for p in patients if p.admitted])

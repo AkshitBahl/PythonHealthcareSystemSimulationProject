@@ -12,7 +12,7 @@ import {
  * Pandemic Page
  * 
  * Dedicated pandemic monitoring dashboard showing:
- * - SIR compartment summary cards
+ * - Health compartment summary cards (Healthy, Infected, Deceased)
  * - Infection curve chart
  * - Daily new cases chart
  * - Pandemic parameters
@@ -42,7 +42,6 @@ export default function PandemicPage() {
     .map((s) => ({
       day: s.day,
       "New Infections": s.pandemic.daily_new_infections || 0,
-      "New Recoveries": s.pandemic.daily_new_recoveries || 0,
       "New Deaths": s.pandemic.daily_new_deaths || 0,
     }));
 
@@ -80,7 +79,7 @@ export default function PandemicPage() {
           <div className="empty-state">
             <div className="empty-state-icon">🦠</div>
             <h3>Pandemic Mode Not Active</h3>
-            <p>Switch to Pandemic mode using the toggle in the sidebar to activate pandemic response monitoring and SIR infection tracking.</p>
+            <p>Switch to Pandemic mode using the toggle in the sidebar to activate pandemic response monitoring and infection tracking.</p>
           </div>
 
           {/* Show historical data if available */}
@@ -103,23 +102,19 @@ export default function PandemicPage() {
       <main className="main-content">
         <div className="page-header fade-in">
           <h2>🔴 Pandemic Response</h2>
-          <p>Active pandemic monitoring — SIR Model tracking — Day {data.day}</p>
+          <p>Active pandemic monitoring — Day {data.day}</p>
         </div>
 
-        {/* SIR Summary Cards */}
+        {/* Health Compartment Summary Cards */}
         {sir && (
           <div className="sir-summary stagger-children">
             <div className="sir-card susceptible">
-              <div className="sir-card-value">{sir.susceptible}</div>
-              <div className="sir-card-label">Susceptible</div>
+              <div className="sir-card-value">{sir.healthy}</div>
+              <div className="sir-card-label">Healthy</div>
             </div>
             <div className="sir-card infected">
               <div className="sir-card-value">{sir.infected}</div>
               <div className="sir-card-label">Infected</div>
-            </div>
-            <div className="sir-card recovered">
-              <div className="sir-card-value">{sir.recovered}</div>
-              <div className="sir-card-label">Recovered</div>
             </div>
             <div className="sir-card deceased">
               <div className="sir-card-value">{sir.deceased}</div>
@@ -139,13 +134,6 @@ export default function PandemicPage() {
               color="red"
             />
             <StatCard
-              icon="💚"
-              label="Total Recoveries"
-              value={pandemic.total_recoveries}
-              sub={`+${pandemic.daily_new_recoveries} today`}
-              color="green"
-            />
-            <StatCard
               icon="💀"
               label="Total Deaths"
               value={pandemic.total_deaths}
@@ -156,8 +144,15 @@ export default function PandemicPage() {
               icon="📊"
               label="Infection Rate"
               value={`${(mode.infection_rate * 100).toFixed(0)}%`}
-              sub={`Transmission radius: ${mode.transmission_radius}`}
+              sub="Base transmission probability"
               color="amber"
+            />
+            <StatCard
+              icon="🏥"
+              label="Surge Capacity"
+              value={`${mode.surge_capacity_multiplier}x`}
+              sub="Hospital bed multiplier"
+              color="cyan"
             />
           </div>
         )}
@@ -184,7 +179,6 @@ export default function PandemicPage() {
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Line type="monotone" dataKey="New Infections" stroke="#ef4444" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="New Recoveries" stroke="#10b981" strokeWidth={2} dot={false} />
                   <Line type="monotone" dataKey="New Deaths" stroke="#6b7280" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
@@ -205,11 +199,7 @@ export default function PandemicPage() {
           }}>
             {[
               { label: "Infection Rate", value: `${(mode.infection_rate * 100).toFixed(1)}%` },
-              { label: "Recovery Rate", value: `${(mode.recovery_rate * 100).toFixed(1)}%` },
-              { label: "Mortality Rate", value: `${(mode.mortality_rate * 100).toFixed(1)}%` },
               { label: "Surge Capacity", value: `${mode.surge_capacity_multiplier}x` },
-              { label: "Pharmacy Demand", value: `${mode.pharmacy_demand_multiplier}x` },
-              { label: "Transmission Radius", value: `${mode.transmission_radius} contacts` },
             ].map((param) => (
               <div key={param.label} style={{
                 padding: "12px 16px",
