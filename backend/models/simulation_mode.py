@@ -25,7 +25,7 @@ class SimulationMode:
             "surge_capacity_multiplier": 1.0,
         },
         "pandemic": {
-            "infection_rate": 0.12,
+            "infection_rate": 0.15,
             "surge_capacity_multiplier": 1.5,
         },
     }
