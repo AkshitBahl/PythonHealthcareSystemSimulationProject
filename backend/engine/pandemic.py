@@ -76,10 +76,13 @@ class PandemicEngine:
             patients
         ))
 
-        # Infection spread: each susceptible has a chance of getting infected
-        for contact in susceptible:
-            infection_prob = mode.infection_rate * (1 - contact.immunity)
-            if random.random() < infection_prob:
+        # Population-level infection: infect exactly 15% of healthy patients
+        num_to_infect = round(len(susceptible) * mode.infection_rate)
+        if num_to_infect > 0 and susceptible:
+            to_infect = random.sample(
+                susceptible, min(num_to_infect, len(susceptible))
+            )
+            for contact in to_infect:
                 contact.infect()
                 self.daily_new_infections += 1
                 self.total_infections += 1

@@ -84,7 +84,7 @@ class Patient(Person):
         self.days_infected: int = 0
         self.assigned_facility: Optional[str] = None
         self.assigned_doctor: Optional[str] = None
-        self.immunity: float = round(random.uniform(0.10, 0.50), 2)
+        self.immunity: float = round(random.uniform(0.10, 0.80), 2)
         self.admitted: bool = False
         self.treatments_received: int = 0
 
@@ -128,10 +128,8 @@ class Patient(Person):
             if not self.admitted and self.days_infected >= self.DAYS_UNTIL_DEATH_UNADMITTED:
                 self.health_status = "Deceased"
 
-        elif self.health_status == "Healthy":
-            sick_chance = 0.02 if not is_pandemic else 0.08
-            if random.random() < sick_chance:
-                self.infect()
+        # Healthy patients: infection is handled at population level
+        # in the simulation engine (exactly 2% normal / 15% pandemic)
 
         return self.health_status
 
@@ -157,7 +155,7 @@ class Patient(Person):
             self.health_status = "Healthy"
             self.days_infected = 0
             self.treatments_received = 0
-            self.immunity = round(random.uniform(0.10, 0.50), 2)
+            self.immunity = round(random.uniform(0.10, 0.80), 2)
         elif self.treatments_received >= self.MAX_TREATMENTS:
             # Two treatments failed — patient dies
             self.health_status = "Deceased"
@@ -181,27 +179,17 @@ class Patient(Person):
 
 class Doctor(Person):
     """
-    A doctor in the healthcare system. Extends Person with medical
-    specialization and patient management capabilities.
+    A doctor in the healthcare system. Extends Person with patient management capabilities.
 
     Attributes:
-        specialization (str): Medical specialization.
         assigned_facility (str | None): ID of the facility the doctor works at.
         assigned_patients (list[str]): List of patient IDs currently under care.
         max_patients (int): Maximum number of patients the doctor can handle.
         available (bool): Whether the doctor is currently available.
     """
 
-    SPECIALIZATIONS = [
-        "General Medicine", "Emergency Medicine", "Surgeon",
-        "Pulmonologist", "Cardiologist", "Infectious Disease",
-        "Pediatrics", "Oncology", "Neurologist", "ICU Specialist",
-    ]
-
-    def __init__(self, name: str, age: int, gender: str, specialization: str,
-                 contact: str = ""):
+    def __init__(self, name: str, age: int, gender: str, contact: str = ""):
         super().__init__(name, age, gender, contact)
-        self.specialization: str = specialization
         self.assigned_facility: Optional[str] = None
         self.assigned_patients: list[str] = []
         self.max_patients: int = 8
@@ -246,7 +234,6 @@ class Doctor(Person):
         """Serialize the doctor to a dictionary for API responses."""
         info = self.get_info()
         info.update({
-            "specialization": self.specialization,
             "assigned_facility": self.assigned_facility,
             "num_patients": len(self.assigned_patients),
             "max_patients": self.max_patients,
