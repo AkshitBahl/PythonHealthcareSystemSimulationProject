@@ -250,12 +250,12 @@ class HealthcareSimulation:
     def _discharge_patient(self, patient: Patient) -> None:
         """Discharge a patient from their assigned hospital."""
         hospital = self._find_hospital(patient.assigned_facility)
-        if hospital:
-            hospital.discharge_patient(patient.id)
-            doctor = self._find_doctor(patient.assigned_doctor)
-            if doctor:
-                doctor.remove_patient(patient.id)
-            patient.discharge()
+        hospital.discharge_patient(patient.id)
+
+        doctor = self._find_doctor(patient.assigned_doctor)
+        doctor.remove_patient(patient.id)
+        
+        patient.discharge()
 
     def _treat_patients(self) -> None:
         """
