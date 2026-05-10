@@ -38,7 +38,7 @@ class Patient(Person):
 
         #Attributes specific to the Patient Class
         self.health_status: str = "Healthy" #This means that the patient starts out healthy
-        self.immunity: float = round(random.uniform(0.1,0.5),2)
+        self.immunity: float = round(random.uniform(0.1,0.5), 2)
         self.days_infected: int = 0
         self.treatments_received: int = 0
         #Start at 0 because the patient is not yet infected
@@ -93,6 +93,8 @@ class Doctor(Person):
         #Attributes specific to Doctor class
         self.assigned_patients: List[Patient] = []
         self.max_patients: int = 8
+        self.assigned_Facility: Optional[str] = None
+        self.is_available: bool = True
 
     #Functions specific to Doctor class
     def assign_patient(self,  Patient_ID:str) -> bool:
