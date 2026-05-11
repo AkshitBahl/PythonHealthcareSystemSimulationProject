@@ -137,7 +137,7 @@ export default function HospitalsPage() {
                           color: "var(--text-secondary)",
                         }}
                       >
-                        {d.name} · {d.specialization?.split(" ")[0]}
+                        {d.name}
                       </span>
                     ))}
                   </div>

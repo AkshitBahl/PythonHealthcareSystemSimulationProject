@@ -116,7 +116,7 @@ class HealthcareSimulation:
 
     def _generate_doctors(self, count: int) -> list[Doctor]:
         """
-        Generate doctors with random specializations.
+        Generate doctors.
         Demonstrates multiple instantiation of Doctor class.
         """
         doctors = []
@@ -129,8 +129,7 @@ class HealthcareSimulation:
             last = random.choice(LAST_NAMES)
             name = f"Dr. {first} {last}"
             age = random.randint(30, 65)
-            spec = Doctor.SPECIALIZATIONS[i % len(Doctor.SPECIALIZATIONS)]
-            doctors.append(Doctor(name, age, gender, spec))
+            doctors.append(Doctor(name, age, gender))
         return doctors
 
     def _assign_staff_to_facilities(self) -> None:
@@ -177,6 +176,17 @@ class HealthcareSimulation:
         else:
             # Normal: use map() to apply health updates to all patients
             list(map(lambda p: p.update_health(is_pandemic=False), self.patients))
+
+            # Population-level infection: infect exactly 2% of healthy patients
+            healthy_alive = [p for p in self.patients if p.health_status == "Healthy"]
+            num_to_infect = round(len(healthy_alive) * self.mode.infection_rate)
+            if num_to_infect > 0 and healthy_alive:
+                to_infect = random.sample(
+                    healthy_alive, min(num_to_infect, len(healthy_alive))
+                )
+                for p in to_infect:
+                    p.infect()
+
             pandemic_result = None
 
         # --- Handle hospital admissions ---
@@ -240,12 +250,12 @@ class HealthcareSimulation:
     def _discharge_patient(self, patient: Patient) -> None:
         """Discharge a patient from their assigned hospital."""
         hospital = self._find_hospital(patient.assigned_facility)
-        if hospital:
-            hospital.discharge_patient(patient.id)
-            doctor = self._find_doctor(patient.assigned_doctor)
-            if doctor:
-                doctor.remove_patient(patient.id)
-            patient.discharge()
+        hospital.discharge_patient(patient.id)
+
+        doctor = self._find_doctor(patient.assigned_doctor)
+        doctor.remove_patient(patient.id)
+        
+        patient.discharge()
 
     def _treat_patients(self) -> None:
         """
