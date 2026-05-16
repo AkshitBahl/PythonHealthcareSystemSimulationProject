@@ -3,21 +3,19 @@
 import Sidebar from "./components/Sidebar";
 import StatCard from "./components/StatCard";
 import BedChart from "./components/BedChart";
-import InfectionChart from "./components/InfectionChart";
 import PatientTable from "./components/PatientTable";
 import { useSimulation } from "./hooks/useSimulation";
 
 /**
  * Dashboard Home Page
- * 
+ *
  * Main overview page showing:
  * - KPI stat cards (patients, beds, infections, pharmacy)
  * - Bed occupancy chart
- * - Infection curve chart (pandemic mode)
  * - Quick patient overview table
  */
 export default function DashboardPage() {
-  const { data, connected, toggleMode, startSim, stopSim, tickSim } = useSimulation();
+  const { data, connected, toggleMode, tickSim, resetSim } = useSimulation();
 
   if (!data) {
     return (
@@ -26,8 +24,7 @@ export default function DashboardPage() {
           data={null}
           connected={connected}
           onToggleMode={() => {}}
-          onStart={() => {}}
-          onStop={() => {}}
+          onReset={() => {}}
           onTick={() => {}}
         />
         <main className="main-content">
@@ -45,7 +42,6 @@ export default function DashboardPage() {
   const hospitals = data.hospitals || [];
   const patients = data.patients || [];
   const pharmacies = data.pharmacies || [];
-  const statistics = data.statistics || [];
   const sir = data.sir;
 
   // Calculate pharmacy stock
@@ -70,8 +66,7 @@ export default function DashboardPage() {
         data={data}
         connected={connected}
         onToggleMode={toggleMode}
-        onStart={startSim}
-        onStop={stopSim}
+        onReset={resetSim}
         onTick={tickSim}
       />
       <main className="main-content">
@@ -79,55 +74,49 @@ export default function DashboardPage() {
         <div className="page-header fade-in">
           <h2>Dashboard Overview</h2>
           <p>
-            Real-time healthcare network status — Day {data.day} •{" "}
+            Healthcare network status — Day {data.day} ·{" "}
             <span style={{ color: mode.is_pandemic ? "var(--red)" : "var(--green)" }}>
-              {mode.is_pandemic ? "🔴 Pandemic Mode" : "🟢 Normal Operations"}
+              {mode.is_pandemic ? "Pandemic Mode" : "Normal Operations"}
             </span>
           </p>
         </div>
 
         {/* KPI Stats */}
-        <div className="stats-grid stagger-children">
+        <div className="stats-grid">
           <StatCard
-            icon="👥"
             label="Total Patients"
             value={overview.total_patients}
             sub={`${admittedCount} admitted · ${statusCounts.Healthy || 0} healthy · ${statusCounts.Deceased || 0} deceased`}
             color="blue"
           />
           <StatCard
-            icon="🛏️"
             label="Bed Occupancy"
             value={`${overview.overall_occupancy || 0}%`}
             sub={`${overview.total_occupied_beds || 0} / ${overview.total_beds || 0} beds`}
             color={overview.overall_occupancy >= 80 ? "red" : overview.overall_occupancy >= 50 ? "amber" : "green"}
           />
           <StatCard
-            icon="🦠"
             label="Active Infections"
             value={infectedCount}
             sub={mode.is_pandemic ? `${sir?.healthy || 0} healthy · ${sir?.deceased || 0} deceased` : "Normal operations"}
             color={infectedCount > 0 ? "red" : "green"}
           />
           <StatCard
-            icon="💊"
             label="Pharmacy Stock"
             value={totalStock.toLocaleString()}
-            sub={lowStockCount > 0 ? `⚠️ ${lowStockCount} low stock alerts` : "All medications stocked"}
+            sub={lowStockCount > 0 ? `${lowStockCount} low stock alerts` : "All medications stocked"}
             color={lowStockCount > 0 ? "amber" : "cyan"}
           />
           <StatCard
-            icon="🏥"
             label="Hospitals"
             value={overview.total_hospitals}
             sub={`${overview.total_doctors || 0} doctors`}
             color="purple"
           />
           <StatCard
-            icon="📊"
             label="Day"
             value={data.day}
-            sub={data.running ? "▶ Simulation running" : "⏸ Paused"}
+            sub="Current simulation day"
             color="cyan"
           />
         </div>
@@ -135,7 +124,6 @@ export default function DashboardPage() {
         {/* Charts */}
         <div className="charts-grid">
           <BedChart hospitals={hospitals} />
-          <InfectionChart statistics={statistics} />
         </div>
 
         {/* Patient Table */}

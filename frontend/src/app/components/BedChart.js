@@ -16,7 +16,7 @@ export default function BedChart({ hospitals = [] }) {
   if (!hospitals.length) {
     return (
       <div className="chart-card">
-        <h3>🛏️ Bed Occupancy</h3>
+        <h3>Bed Occupancy</h3>
         <div className="empty-state">
           <p>No hospital data available</p>
         </div>
@@ -63,7 +63,7 @@ export default function BedChart({ hospitals = [] }) {
 
   return (
     <div className="chart-card" id="bed-occupancy-chart">
-      <h3>🛏️ Bed Occupancy by Hospital</h3>
+      <h3>Bed Occupancy by Hospital</h3>
       <ResponsiveContainer width="100%" height={280}>
         <BarChart data={chartData} barCategoryGap="20%">
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />

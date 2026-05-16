@@ -9,7 +9,6 @@ Endpoints:
 - GET  /api/patients            — All patients with status
 - GET  /api/doctors             — All doctors
 - GET  /api/pharmacy            — Pharmacy inventory status
-- GET  /api/statistics          — Time-series statistics
 - POST /api/mode                — Switch Normal ↔ Pandemic
 - POST /api/simulation/tick     — Advance one day
 - POST /api/simulation/reset    — Reset simulation to Day 0
@@ -91,15 +90,6 @@ def create_routes(simulation):
         """Get pharmacy inventory status from all pharmacies."""
         return {
             "pharmacies": [p.to_dict() for p in simulation.pharmacies],
-            "day": simulation.day,
-        }
-
-    @router.get("/statistics")
-    async def get_statistics():
-        """Get time-series statistics for all recorded days."""
-        return {
-            "records": simulation.stats.get_all_records(),
-            "summary": simulation.stats.get_summary(),
             "day": simulation.day,
         }
 

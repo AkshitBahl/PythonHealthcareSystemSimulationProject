@@ -6,19 +6,19 @@ import { useSimulation } from "../hooks/useSimulation";
 
 /**
  * Hospitals Page
- * 
+ *
  * Detailed view of each hospital showing:
  * - Per-hospital stats (beds, ICU, ventilators)
  * - Occupancy bars
- * - Assigned doctors and patients
+ * - Assigned doctors
  */
 export default function HospitalsPage() {
-  const { data, connected, toggleMode, startSim, stopSim, tickSim } = useSimulation();
+  const { data, connected, toggleMode, tickSim, resetSim } = useSimulation();
 
   if (!data) {
     return (
       <div className="app-layout">
-        <Sidebar data={null} connected={connected} onToggleMode={() => {}} onStart={() => {}} onStop={() => {}} onTick={() => {}} />
+        <Sidebar data={null} connected={connected} onToggleMode={() => {}} onReset={() => {}} onTick={() => {}} />
         <main className="main-content">
           <div className="loading-container"><div className="loading-spinner" /><div className="loading-text">Loading hospitals...</div></div>
         </main>
@@ -37,7 +37,7 @@ export default function HospitalsPage() {
 
   return (
     <div className="app-layout">
-      <Sidebar data={data} connected={connected} onToggleMode={toggleMode} onStart={startSim} onStop={stopSim} onTick={tickSim} />
+      <Sidebar data={data} connected={connected} onToggleMode={toggleMode} onReset={resetSim} onTick={tickSim} />
       <main className="main-content">
         <div className="page-header fade-in">
           <h2>Hospitals</h2>
@@ -45,14 +45,13 @@ export default function HospitalsPage() {
         </div>
 
         {/* Bed Chart */}
-        <div style={{ marginBottom: "32px" }}>
+        <div style={{ marginBottom: "28px" }}>
           <BedChart hospitals={hospitals} />
         </div>
 
         {/* Hospital Cards */}
-        <div className="hospitals-grid stagger-children">
+        <div className="hospitals-grid">
           {hospitals.map((h) => {
-            // Find doctors assigned to this hospital
             const hospitalDocs = doctors.filter((d) => d.assigned_facility === h.id);
 
             return (
@@ -60,7 +59,7 @@ export default function HospitalsPage() {
                 <div className="hospital-card-header">
                   <div>
                     <h3>{h.name}</h3>
-                    <div className="location">📍 {h.location}</div>
+                    <div className="location">{h.location}</div>
                   </div>
                   <span className={`status-badge ${h.occupancy_rate >= 80 ? "critical" : h.occupancy_rate >= 50 ? "mild" : "healthy"}`}>
                     {h.occupancy_rate}%
@@ -120,17 +119,17 @@ export default function HospitalsPage() {
                 </div>
 
                 {/* Assigned Doctors */}
-                <div style={{ marginTop: "16px" }}>
-                  <div style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "8px", fontWeight: 600 }}>
-                    👨‍⚕️ ASSIGNED DOCTORS ({hospitalDocs.length})
+                <div style={{ marginTop: "14px" }}>
+                  <div style={{ fontSize: "10px", color: "var(--text-muted)", marginBottom: "6px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                    Assigned Doctors ({hospitalDocs.length})
                   </div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
                     {hospitalDocs.map((d) => (
                       <span
                         key={d.id}
                         style={{
-                          fontSize: "11px",
-                          padding: "4px 8px",
+                          fontSize: "10px",
+                          padding: "3px 7px",
                           background: "var(--bg-glass)",
                           border: "1px solid var(--border-color)",
                           borderRadius: "var(--radius-full)",

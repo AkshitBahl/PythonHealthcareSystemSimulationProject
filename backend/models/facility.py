@@ -1,16 +1,15 @@
-import uuid # To generate unique ids for all people
-# from typing import Optional
+import uuid     # To generate unique ids
 
 class Facility:
     """
-    Base class representing medical facility infrastructure
+    Base class representing medical facility
 
     Attributes:
-        id (str): Unique facility ID
-        name (str): Facility name
-        location (str): location
+        id (str): ID of the facility
+        name (str): Name of the facility
+        location (str): Location of the facility
         facility_type (str): Type of facility ('Hospital', 'Pharmacy')
-        active (bool): Whether the facility is currently active
+        active (bool): Where the facility is active
     """
 
     def __init__(self, name: str, location: str, facility_type: str):
@@ -21,6 +20,7 @@ class Facility:
         self.active: bool = True
 
     def get_status(self) -> dict:
+        """Convert the Facility object to a dictionary form for API responses"""
         return {
             "id": self.id,
             "name": self.name,
@@ -29,17 +29,13 @@ class Facility:
             "active": self.active,
         }
 
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(name='{self.name}', location='{self.location}')"
-
-
 class Hospital(Facility):
     """
-    A hospital facility for management of beds, doctors and patients.
+    A hospital facility for management of beds, doctors and patients
 
     Attributes:
         total_beds (int): Total no. of beds
-        base_beds (int): Original bed count (before surge capacity)
+        base_beds (int): Original bed count
         doctors (list[str]): List of doctor IDs assigned to the hospital
         patients (list[str]): List of admitted patient IDs in the hospital
     """
@@ -65,16 +61,16 @@ class Hospital(Facility):
         Calculate the bed occupancy rate
 
         Returns:
-            float: Occupancy rate as a percentage (0-100).
+            float: Returns occupancy rate as a percentage
         """
         return round((self.occupied_beds / self.total_beds) * 100, 1)
 
     def admit_patient(self, patient_id: str) -> bool:
         """
-        Admit a patient to the hospital.
+        Admit a patient to the hospital
 
         Returns:
-            bool: True if admission was successful.
+            bool: True if patient is admitted
         """
         if self.available_beds > 0:
             self.patients.append(patient_id)
@@ -86,7 +82,7 @@ class Hospital(Facility):
         Discharge a patient from hospital
 
         Returns:
-            bool: True if patient was found and discharged.
+            bool: True if patient was found and discharged
         """
         if patient_id in self.patients:
             self.patients.remove(patient_id)
@@ -115,10 +111,10 @@ class Hospital(Facility):
 
 class Pharmacy(Facility):
     """
-    A pharmacy facility with a dictionary for medication inventory
+    A pharmacy facility for medicine inventory
 
     Attributes:
-        inventory (dict): It maps medication names with the stock amounts
+        inventory (dict): It maps medicine names with the available amount
         prescriptions_filled (int): Total prescriptions filled
         daily_prescriptions (int): Prescriptions filled today
     """
@@ -140,10 +136,10 @@ class Pharmacy(Facility):
 
     def fill_prescription(self, medication_name: str, quantity: int = 1) -> bool:
         """
-        Fill a prescription by dispensing medication from stock.
+        Give medicine from stock
 
         Returns:
-            bool: True if medication was available and dispensed.
+            bool: True if medicine has been given
         """
         if medication_name in self.inventory and self.inventory[medication_name] >= quantity:
             self.inventory[medication_name] -= quantity
@@ -153,14 +149,14 @@ class Pharmacy(Facility):
         return False
 
     def reset_daily_count(self) -> None:
-        """Reset the daily prescription counter."""
+        """Reset the daily prescription counter"""
         self.daily_prescriptions = 0
 
     def to_dict(self) -> dict:
-        """Convert the pharmacy object to a dictionary form for API responses."""
+        """Convert the pharmacy object to a dictionary form for API responses"""
         status = self.get_status()
 
-        # List comprehension: format inventory as a list of dicts for the frontend
+        # List comprehension: format the inventory as a list of dictionary for the frontend
         inventory_list = [{"name": k, "stock": v} for k, v in self.inventory.items()]
 
         status.update({

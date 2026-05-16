@@ -5,26 +5,25 @@ import { usePathname } from "next/navigation";
 
 /**
  * Sidebar Navigation Component
- * 
- * Renders the glassmorphic sidebar with:
+ *
+ * Renders the sidebar with:
  * - Logo/brand
  * - Navigation links with active states
- * - Mode toggle (Normal ↔ Pandemic)
- * - Simulation controls (Play/Pause/Step)
+ * - Mode toggle (Normal / Pandemic)
+ * - Simulation controls (Step / Reset)
  * - Connection status indicator
  */
-export default function Sidebar({ data, connected, onToggleMode, onStart, onStop, onTick }) {
+export default function Sidebar({ data, connected, onToggleMode, onReset, onTick }) {
   const pathname = usePathname();
   const day = data?.day || 0;
   const mode = data?.mode?.mode || "normal";
-  const running = data?.running || false;
 
   const navLinks = [
-    { href: "/", label: "Dashboard", icon: "📊" },
-    { href: "/hospitals", label: "Hospitals", icon: "🏥" },
-    { href: "/patients", label: "Patients", icon: "👥" },
-    { href: "/pharmacy", label: "Pharmacy", icon: "💊" },
-    { href: "/pandemic", label: "Pandemic", icon: "🦠" },
+    { href: "/", label: "Dashboard", icon: "D" },
+    { href: "/hospitals", label: "Hospitals", icon: "H" },
+    { href: "/patients", label: "Patients", icon: "P" },
+    { href: "/pharmacy", label: "Pharmacy", icon: "Rx" },
+    { href: "/pandemic", label: "Pandemic", icon: "V" },
   ];
 
   return (
@@ -32,7 +31,7 @@ export default function Sidebar({ data, connected, onToggleMode, onStart, onStop
       {/* Logo */}
       <div className="sidebar-header">
         <div className="sidebar-logo">
-          <div className="sidebar-logo-icon">🏥</div>
+          <div className="sidebar-logo-icon">MS</div>
           <div className="sidebar-logo-text">
             <h1>MedSync</h1>
             <span>Healthcare Simulator</span>
@@ -56,16 +55,16 @@ export default function Sidebar({ data, connected, onToggleMode, onStart, onStop
         ))}
 
         {/* Mode Toggle */}
-        <div className="nav-section-label" style={{ marginTop: "16px" }}>
+        <div className="nav-section-label" style={{ marginTop: "14px" }}>
           Simulation Mode
         </div>
         <div className="mode-toggle-wrapper">
           <div className="mode-toggle" onClick={onToggleMode} id="mode-toggle">
             <div className={`mode-option normal ${mode === "normal" ? "active" : ""}`}>
-              🟢 Normal
+              Normal
             </div>
             <div className={`mode-option pandemic ${mode === "pandemic" ? "active" : ""}`}>
-              🔴 Pandemic
+              Pandemic
             </div>
           </div>
         </div>
@@ -75,29 +74,29 @@ export default function Sidebar({ data, connected, onToggleMode, onStart, onStop
       <div className="sidebar-footer">
         <div className="sim-controls">
           <div className="day-badge">
-            📅 Day: <span>{day}</span>
+            Day: <span>{day}</span>
           </div>
           <div className="sim-buttons">
             <button
-              className={`sim-btn ${running ? "active" : ""}`}
-              onClick={running ? onStop : onStart}
-              id="sim-play-pause"
+              className="sim-btn reset"
+              onClick={onReset}
+              id="sim-reset"
+              title="Reset simulation to Day 0"
             >
-              {running ? "⏸ Pause" : "▶ Play"}
+              Reset
             </button>
             <button
               className="sim-btn step"
               onClick={onTick}
-              disabled={running}
               id="sim-step"
               title="Advance one day"
             >
-              ⏭
+              +1
             </button>
           </div>
           <div className="connection-status">
             <div className={`connection-dot ${connected ? "connected" : "disconnected"}`} />
-            <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>
+            <span style={{ color: "var(--text-muted)", fontSize: "10px" }}>
               {connected ? "Connected" : "Reconnecting..."}
             </span>
           </div>
