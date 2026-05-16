@@ -1,18 +1,3 @@
-"""
-Core Simulation Engine
-======================
-Manages the entire healthcare simulation — population, facilities,
-daily tick logic, and mode switching.
-
-Demonstrates:
-- Multiple instantiation (50+ Patients, 12 Doctors)
-- map() for batch health updates
-- filter() for patient selection
-- reduce() for aggregate calculations
-- List comprehension throughout
-- Deterministic treatment system (2 treatments, threshold 0.50)
-"""
-
 import random
 from functools import reduce
 
@@ -20,10 +5,8 @@ from backend.models.person import Patient, Doctor
 from backend.models.facility import Hospital, Pharmacy
 from backend.models.simulation_mode import SimulationMode
 from backend.engine.pandemic import PandemicEngine
-from backend.engine.statistics import StatisticsCollector
 
-
-# --- Name data for generating realistic population ---
+# --- Name data to generate the population/patient ---
 FIRST_NAMES_MALE = [
     "James", "Robert", "John", "Michael", "David", "William", "Richard",
     "Joseph", "Thomas", "Christopher", "Daniel", "Matthew", "Anthony",
@@ -41,16 +24,16 @@ LAST_NAMES = [
     "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin",
 ]
 
-# Medication mapping for prescriptions based on status
+# Medicine mapping
 MEDICATIONS = ["Paracetamol", "Amoxicillin", "Ibuprofen", "Dexamethasone",
                "Remdesivir", "Aspirin", "Oseltamivir"]
 
 
 class HealthcareSimulation:
     """
-    The core simulation engine managing the healthcare network.
+    The simulation engine managing the healthcare network
 
-    Initializes a population of patients, doctors, and facilities.
+    Creates a population of patients, doctors, and facilities.
     Runs daily 'ticks' that simulate health changes, admissions, discharges,
     prescriptions, and (in pandemic mode) infection spread.
 
@@ -62,7 +45,6 @@ class HealthcareSimulation:
         hospitals (list[Hospital]): All hospitals.
         pharmacies (list[Pharmacy]): All pharmacies.
         pandemic_engine (PandemicEngine): Handles pandemic-specific logic.
-        stats (StatisticsCollector): Collects daily metrics.
         pandemic_seeded (bool): Whether initial infections have been seeded.
     """
 
@@ -71,7 +53,6 @@ class HealthcareSimulation:
         self.day: int = 0
         self.mode: SimulationMode = SimulationMode("normal")
         self.pandemic_engine: PandemicEngine = PandemicEngine()
-        self.stats: StatisticsCollector = StatisticsCollector()
         self.pandemic_seeded: bool = False
 
         # --- Multiple instantiation: Generate population ---
@@ -91,9 +72,6 @@ class HealthcareSimulation:
 
         # --- Assign doctors to facilities ---
         self._assign_staff_to_facilities()
-
-        # Record initial state
-        self._record_stats()
 
     def _generate_patients(self, count: int) -> list[Patient]:
         """
@@ -213,9 +191,6 @@ class HealthcareSimulation:
         for patient in can_discharge:
             self._discharge_patient(patient)
 
-        # --- Record statistics ---
-        self._record_stats(pandemic_result)
-
         return self.get_state()
 
     def _try_admit_patient(self, patient: Patient) -> bool:
@@ -300,14 +275,6 @@ class HealthcareSimulation:
         matches = [d for d in self.doctors if d.id == doctor_id]
         return matches[0] if matches else None
 
-    def _record_stats(self, pandemic_data: dict | None = None) -> None:
-        """Record current simulation state to statistics collector."""
-        self.stats.record_day(
-            self.day, self.patients, self.hospitals, self.pharmacies,
-            self.mode.to_dict(),
-            pandemic_data
-        )
-
     def set_mode(self, mode: str) -> dict:
         """
         Switch the simulation mode.
@@ -384,7 +351,6 @@ class HealthcareSimulation:
             "pharmacies": pharmacies_data,
             "pandemic": self.pandemic_engine.to_dict() if self.mode.is_pandemic else None,
             "sir": self.pandemic_engine.get_sir_counts(self.patients) if self.mode.is_pandemic else None,
-            "statistics": self.stats.get_all_records(),
         }
 
     def reset(self) -> None:

@@ -7,17 +7,17 @@ import { useSimulation } from "../hooks/useSimulation";
 
 /**
  * Patients Page
- * 
+ *
  * Full patient registry with filtering, sorting, and status overview stats.
  * Uses simplified 3-status model: Healthy, Infected, Deceased.
  */
 export default function PatientsPage() {
-  const { data, connected, toggleMode, startSim, stopSim, tickSim } = useSimulation();
+  const { data, connected, toggleMode, tickSim, resetSim } = useSimulation();
 
   if (!data) {
     return (
       <div className="app-layout">
-        <Sidebar data={null} connected={connected} onToggleMode={() => {}} onStart={() => {}} onStop={() => {}} onTick={() => {}} />
+        <Sidebar data={null} connected={connected} onToggleMode={() => {}} onReset={() => {}} onTick={() => {}} />
         <main className="main-content">
           <div className="loading-container"><div className="loading-spinner" /><div className="loading-text">Loading patients...</div></div>
         </main>
@@ -40,7 +40,7 @@ export default function PatientsPage() {
 
   return (
     <div className="app-layout">
-      <Sidebar data={data} connected={connected} onToggleMode={toggleMode} onStart={startSim} onStop={stopSim} onTick={tickSim} />
+      <Sidebar data={data} connected={connected} onToggleMode={toggleMode} onReset={resetSim} onTick={tickSim} />
       <main className="main-content">
         <div className="page-header fade-in">
           <h2>Patients</h2>
@@ -48,11 +48,11 @@ export default function PatientsPage() {
         </div>
 
         {/* Summary Stats */}
-        <div className="stats-grid stagger-children">
-          <StatCard icon="💚" label="Healthy" value={counts.Healthy || 0} sub="No conditions" color="green" />
-          <StatCard icon="🦠" label="Infected" value={counts.Infected || 0} sub={`${admittedCount} admitted for treatment`} color="red" />
-          <StatCard icon="💀" label="Deceased" value={counts.Deceased || 0} sub="Fatalities" color="purple" />
-          <StatCard icon="🛡️" label="Avg Immunity" value={`${avgImmunity}%`} sub={`Threshold: 50% to recover`} color="cyan" />
+        <div className="stats-grid">
+          <StatCard label="Healthy" value={counts.Healthy || 0} sub="No conditions" color="green" />
+          <StatCard label="Infected" value={counts.Infected || 0} sub={`${admittedCount} admitted for treatment`} color="red" />
+          <StatCard label="Deceased" value={counts.Deceased || 0} sub="Fatalities" color="purple" />
+          <StatCard label="Avg Immunity" value={`${avgImmunity}%`} sub="Threshold: 50% to recover" color="cyan" />
         </div>
 
         {/* Patient Table */}

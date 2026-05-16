@@ -1,19 +1,29 @@
-import uuid    #We import this library in order to be able to generate unique ids for all people
-import random   #We import this library in order to generate random values within a given range
+import uuid     # To generate unique ids
+import random   # We import this library in order to generate random values within a given range
 from typing import List, Optional
 
 
 class Person:
-    def __init__(self, name, age, gender, contact):
-        self.id: str = uuid.uuid4() [:8]   #Generates a big number, but we take the first 8
-        self.name: str =  name
+    """
+    Base class representing person in the healthcare system.
+
+    Attributes:
+        id (str): Unique identifier for the person.
+        name (str): Full name.
+        age (int): Age in years.
+        gender (str): Gender ('Male', 'Female', 'Other').
+        contact (str): Contact phone number.
+    """
+
+    def __init__(self, name: str, age: int, gender: str, contact: str = ""):
+        self.id: str = str(uuid.uuid4())[:8]   # Generates a big number, but we take the first 8
+        self.name: str = name
         self.age: int = age
         self.gender: str = gender
-        self.contact: str =  contact
+        self.contact: str = contact
 
-#To send the data to our API, we need to transform it into a JSON file
-#The to_dict function puts the data in a dictionary format and makes it easier to share the data
     def get_info(self) -> dict:
+        """Return a dictionary with the person's info to send the data to our API"""
         return {
             "id": self.id,
             "name": self.name,
@@ -24,95 +34,180 @@ class Person:
 
 
 class Patient(Person):
-    #3 Health Statuses
-    HEALTH_STATUS = ["Healthy", "Infected", "Deceased"]
+    """
+    A patient in the healthcare system. Extends Person and contain methods for admission, discharge, and health updates
 
-    #Treatment Constants
+    Attributes:
+        health_status (str): Current status — 'Healthy', 'Infected', 'Deceased'
+        immunity (float): Immunity level 0.0 – 0.5
+        days_infected (int): No. of days the patient has been infected
+        treatments_received (int): No. of treatments received
+        admitted (bool): Whether the patient is admitted to a facility
+        assigned_doctor (str): ID of the assigned doctor
+        assigned_facility (str): ID of the facility the patient is assigned to
+    """
+
+    # Three health statuses
+    HEALTH_STATUSES = ["Healthy", "Infected", "Deceased"]
+
+    # Treatment constants
     IMMUNITY_THRESHOLD = 0.50
     MAX_TREATMENTS = 2
     DAYS_UNTIL_DEATH_UNADMITTED = 10
 
-    def __init__(self, name, age, gender, contact):
+    def __init__(self, name: str, age: int, gender: str, contact: str = ""):
         super().__init__(name, age, gender, contact)
-        #it will reuse the attributes of the Person class
-
-        #Attributes specific to the Patient Class
-        self.health_status: str = "Healthy" #This means that the patient starts out healthy
+        self.health_status: str = "Healthy" # The patient starts out healthy
         self.immunity: float = round(random.uniform(0.1,0.5), 2)
         self.days_infected: int = 0
         self.treatments_received: int = 0
-        #Start at 0 because the patient is not yet infected
         self.admitted: bool = False
-        #Boolean value ; the patient is not yet in hospital
-        self.assigned_Doctor: Optional[str] = None
-        self.assigned_Facility: Optional[str] = None
-        #Patient is not yet sick, so not in hospital and don't have a doctor
+        self.assigned_doctor: Optional[str] = None
+        self.assigned_facility: Optional[str] = None
 
-    #Functions specific to the Patient Class
-    def admit(self, Doctor_ID: str, Facility_ID: str) -> None:
+    def admit(self, facility_id: str, doctor_id: str) -> None:
+        """Admit the patient to a facility with a doctor"""
         self.admitted = True
-        self.assigned_Doctor = Doctor_ID
-        self.assigned_Facility = Facility_ID
+        self.assigned_facility = facility_id
+        self.assigned_doctor = doctor_id
 
-    def infect(self):
+    def infect(self) -> None:
+        """Infect the patient"""
         if self.health_status is not ["Infected", "Deceased"]:
             self.health_status = "Infected"
-            #If the patient is not already infected or deceased, then their health status is changed
+            self.days_infected = 0
+            self.treatments_received = 0
 
-    #Main objective of this function is to return the health status
-    def update_health(self) -> str:
+    def update_health(self, is_pandemic: bool = False) -> str:
+        """
+        Update the patient's health status based on the simulation mode
+
+        - Deceased: no change in patient's health status
+        - Healthy: random chance of getting infected (higher in pandemic mode)
+        - Infected: In case of unadmitted, the patient die after 10 days without treatment
+        In case of admitted, no change in patient's health status.
+
+        Returns:
+            str: The updated health status.
+        """
         if self.health_status == "Deceased":
             return self.health_status
+
         if self.health_status == "Infected":
             self.days_infected += 1
-            if not self.admitted and self.days_infected > self.DAYS_UNTIL_DEATH_UNADMITTED:
+            # Unadmitted infected patients die after 10 days
+            if not self.admitted and self.days_infected >= self.DAYS_UNTIL_DEATH_UNADMITTED:
                 self.health_status = "Deceased"
+
+        elif self.health_status == "Healthy":
+            sick_chance = 0.02 if not is_pandemic else 0.08
+            if random.random() < sick_chance:
+                self.infect()
+
         return self.health_status
 
-    def discharge(self):
+    def discharge(self) -> None:
+        """Discharge the patient from the facility."""
         self.admitted = False
-        self.assigned_Doctor = None
-        self.assigned_Facility = None
+        self.assigned_facility = None
+        self.assigned_doctor = None
 
-    def treat(self):
-        self.immunity = round((self.immunity+0.1),2)
+    def treat(self) -> str:
+        """
+        Apply treatment to the patient
+
+        Returns:
+            str: The updated health status after treatment
+        """
+        if self.health_status != "Infected":
+            return self.health_status
+
         self.treatments_received += 1
-        if self.immunity >= self.IMMUNITY_THRESHOLD:
+        self.immunity = round(self.immunity + 0.10, 2)
+
+        if self.immunity > self.IMMUNITY_THRESHOLD:
             self.health_status = "Healthy"
             self.days_infected = 0
             self.treatments_received = 0
-            self.immunity = round(random.uniform(0.1,0.8),2)
-        if self.treatments_received > self.MAX_TREATMENTS:
+            self.immunity = round(random.uniform(0.10,0.80), 2)
+        elif self.treatments_received >= self.MAX_TREATMENTS:
             self.health_status = "Deceased"
+
         return self.health_status
 
-class Doctor(Person):
-    def __init__(self, name, age, gender, contact):
-        super().__init__(name, age, gender, contact)
-
-        #Attributes specific to Doctor class
-        self.assigned_patients: List[Patient] = []
-        self.max_patients: int = 8
-        self.assigned_Facility: Optional[str] = None
-        self.is_available: bool = True
-
-    #Functions specific to Doctor class
-    def assign_patient(self,  Patient_ID:str) -> bool:
-        if len(self.assigned_patients) < self.max_patients:
-            self.assigned_patients.append(Patient_ID)
-            return True
-        return False
-
-    def remove_patient(self, Patient_ID:str) -> bool:
-        if Patient_ID in self.assigned_patients:
-            self.assigned_patients.remove(Patient_ID)
-            return True
-        return False
-
     def to_dict(self) -> dict:
+        """Return a dictionary with the patient's info to send the data to our API"""
         info = self.get_info()
         info.update({
-            "assigned_facility": self.assigned_Facility,
+            "health_status": self.health_status,
+            "days_infected": self.days_infected,
+            "admitted": self.admitted,
+            "assigned_facility": self.assigned_facility,
+            "assigned_doctor": self.assigned_doctor,
+            "immunity": self.immunity,
+            "treatments_received": self.treatments_received,
+        })
+        return info
+
+class Doctor(Person):
+    """
+    A doctor in the healthcare system. Extends Person and manages patients
+
+    Attributes:
+        assigned_facility (str | None): ID of the facility the doctor works at.
+        assigned_patients (list[str]): List of patient IDs currently under care.
+        max_patients (int): Maximum number of patients the doctor can handle.
+        available (bool): Whether the doctor is currently available.
+    """
+    def __init__(self, name: str, age: int, gender: str, contact: str = ""):
+        super().__init__(name, age, gender, contact)
+        self.assigned_patients: list[str] = []
+        self.max_patients: int = 8
+        self.assigned_facility: Optional[str] = None
+        self.available: bool = True
+
+    def assign_patient(self, patient_id: str) -> bool:
+        """
+        Assign a patient to the doctor
+
+        Returns:
+            bool: True if doctor assigned to the patient otherwise False
+        """
+        if len(self.assigned_patients) < self.max_patients:
+            self.assigned_patients.append(patient_id)
+            return True
+        return False
+
+    def remove_patient(self, patient_id:str) -> bool:
+        """Remove a patient from the doctor assigned lists"""
+        if patient_id in self.assigned_patients:
+            self.assigned_patients.remove(patient_id)
+            return True
+        return False
+
+    def diagnose(self, patient: "Patient") -> str:
+        """
+        Diagnose the patient
+
+        Returns:
+            str: diagnosed patient string
+        """
+
+        # List comprehension: gather relevant conditions
+        conditions = [
+            status for status in Patient.HEALTH_STATUSES
+            if status == patient.health_status
+        ]
+        diagnosis = f"Patient {patient.name} diagnosed: {patient.health_status}"
+        if patient.health_status == "Infected":
+            diagnosis += " (Infectious disease detected)"
+        return diagnosis
+
+    def to_dict(self) -> dict:
+        """Return a dictionary with the doctor's info to send the data to our API"""
+        info = self.get_info()
+        info.update({
+            "assigned_facility": self.assigned_facility,
             "num_patients": len(self.assigned_patients),
             "max_patients": self.max_patients,
             "available": self.available,

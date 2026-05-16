@@ -61,7 +61,7 @@ export default function PatientTable({ patients = [], hospitals = [] }) {
   return (
     <div className="data-table-wrapper" id="patient-table">
       <div className="data-table-header">
-        <h3>👥 Patient Registry</h3>
+        <h3>Patient Registry</h3>
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           {/* Status filter */}
           <select

@@ -1,11 +1,10 @@
 """
 Engine Package
 ==============
-Contains the simulation engine, pandemic model, and statistics collector.
+Contains the simulation engine and pandemic model.
 """
 
 from .simulation import HealthcareSimulation
-from .statistics import StatisticsCollector
 from .pandemic import PandemicEngine
 
-__all__ = ["HealthcareSimulation", "StatisticsCollector", "PandemicEngine"]
+__all__ = ["HealthcareSimulation", "PandemicEngine"]

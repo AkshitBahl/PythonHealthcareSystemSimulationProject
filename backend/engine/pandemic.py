@@ -1,32 +1,18 @@
-"""
-Pandemic Engine
-============================
-Implements infection spread logic for pandemic mode.
-
-Demonstrates:
-- List comprehension for population state tracking
-- filter() for identifying susceptible/infected populations
-- map() for applying infection state changes
-"""
-
 import random
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from backend.models.person import Patient
     from backend.models.simulation_mode import SimulationMode
-
 
 class PandemicEngine:
     """
-    Manages pandemic-specific logic including infection spread
-    and population health tracking.
+    Manages pandemic-specific logic. One tick represents one day
 
     Attributes:
-        total_infections (int): Cumulative total infections.
-        total_deaths (int): Cumulative total deaths.
-        daily_new_infections (int): New infections in the current tick.
-        daily_new_deaths (int): New deaths in the current tick.
+        total_infections (int): Total infections
+        total_deaths (int): Total deaths
+        daily_new_infections (int): New infections on that specific day
+        daily_new_deaths (int): New deaths on that specific day
     """
 
     def __init__(self):
@@ -37,13 +23,12 @@ class PandemicEngine:
 
     def seed_infection(self, patients: list, count: int = 5) -> list[str]:
         """
-        Seed initial infections when pandemic mode is activated.
-        Selects random healthy patients to infect.
+        Selects random healthy patients to infect
 
         Returns:
-            list[str]: IDs of newly infected patients.
+            list[str]: IDs of the new infected patients
         """
-        # List comprehension: find healthy patients
+        # List comprehension: Find healthy patients
         susceptible = [p for p in patients if p.health_status == "Healthy"]
 
         to_infect = random.sample(susceptible, min(count, len(susceptible)))
@@ -58,25 +43,21 @@ class PandemicEngine:
 
     def spread_infection(self, patients: list, mode: "SimulationMode") -> dict:
         """
-        Simulate one tick of infection spread.
-
-        Uses:
-        - filter() to identify susceptible populations
-        - map() for batch status updates
+        Simulate one tick of infection spread
 
         Returns:
-            dict: Summary of spread results for this tick.
+            dict: Returns the summary of spread results for this tick.
         """
         self.daily_new_infections = 0
         self.daily_new_deaths = 0
 
-        # filter() to get susceptible patients (healthy)
+        # filter() to get susceptible patients which are healthy
         susceptible = list(filter(
             lambda p: p.health_status == "Healthy",
             patients
         ))
 
-        # Population-level infection: infect exactly 15% of healthy patients
+        # Population-level infection: Infect  15% of healthy patients
         num_to_infect = round(len(susceptible) * mode.infection_rate)
         if num_to_infect > 0 and susceptible:
             to_infect = random.sample(
@@ -87,11 +68,11 @@ class PandemicEngine:
                 self.daily_new_infections += 1
                 self.total_infections += 1
 
-        # Health updates for all patients (uses map)
+        # Update health for all patients
         previous_statuses = {p.id: p.health_status for p in patients}
         list(map(lambda p: p.update_health(is_pandemic=mode.is_pandemic), patients))
 
-        # Count deaths from status changes
+        # Count deaths by checking the status changes
         for patient in patients:
             prev = previous_statuses.get(patient.id)
             if prev != "Deceased" and patient.health_status == "Deceased":
@@ -102,8 +83,7 @@ class PandemicEngine:
 
     def get_sir_counts(self, patients: list) -> dict:
         """
-        Calculate current health compartment counts.
-        Uses list comprehension for categorization.
+        Calculate current health
 
         Returns:
             dict: Counts for healthy, infected, deceased compartments.
@@ -120,7 +100,7 @@ class PandemicEngine:
         }
 
     def _get_tick_summary(self, patients: list) -> dict:
-        """Generate a summary for the current tick."""
+        """Generate a summary for the current tick"""
         sir = self.get_sir_counts(patients)
         return {
             "sir": sir,
@@ -131,14 +111,14 @@ class PandemicEngine:
         }
 
     def reset(self) -> None:
-        """Reset all pandemic tracking counters."""
+        """Reset all the pandemic related counters"""
         self.total_infections = 0
         self.total_deaths = 0
         self.daily_new_infections = 0
         self.daily_new_deaths = 0
 
     def to_dict(self) -> dict:
-        """Serialize the pandemic engine state."""
+        """Convert the SimulationMode object to a dictionary form for API responses"""
         return {
             "total_infections": self.total_infections,
             "total_deaths": self.total_deaths,
