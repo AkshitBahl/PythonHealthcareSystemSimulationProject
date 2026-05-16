@@ -1,28 +1,16 @@
-"""
-Facility Class Hierarchy
-========================
-Base class `Facility` is extended into `Hospital` and `Pharmacy`.
-
-Demonstrates:
-- Inheritance (Facility → Hospital, Pharmacy)
-- List comprehension for resource calculations
-- Encapsulation of facility-specific logic
-"""
-
-import uuid
-from typing import Optional
-
+import uuid # To generate unique ids for all people
+# from typing import Optional
 
 class Facility:
     """
-    Base class representing any medical facility in the healthcare network.
+    Base class representing medical facility infrastructure
 
     Attributes:
-        id (str): Unique facility identifier.
-        name (str): Facility name.
-        location (str): City/area location.
-        facility_type (str): Type of facility ('Hospital', 'Pharmacy').
-        active (bool): Whether the facility is currently operational.
+        id (str): Unique facility ID
+        name (str): Facility name
+        location (str): location
+        facility_type (str): Type of facility ('Hospital', 'Pharmacy')
+        active (bool): Whether the facility is currently active
     """
 
     def __init__(self, name: str, location: str, facility_type: str):
@@ -33,7 +21,6 @@ class Facility:
         self.active: bool = True
 
     def get_status(self) -> dict:
-        """Return the basic status of the facility."""
         return {
             "id": self.id,
             "name": self.name,
@@ -48,13 +35,13 @@ class Facility:
 
 class Hospital(Facility):
     """
-    A hospital facility with bed management and doctor/patient tracking.
+    A hospital facility for management of beds, doctors and patients.
 
     Attributes:
-        total_beds (int): Total number of beds.
-        base_beds (int): Original bed count (before surge capacity).
-        doctors (list[str]): List of doctor IDs assigned to this hospital.
-        patients (list[str]): List of admitted patient IDs.
+        total_beds (int): Total no. of beds
+        base_beds (int): Original bed count (before surge capacity)
+        doctors (list[str]): List of doctor IDs assigned to the hospital
+        patients (list[str]): List of admitted patient IDs in the hospital
     """
 
     def __init__(self, name: str, location: str, total_beds: int = 100):
@@ -64,25 +51,22 @@ class Hospital(Facility):
         self.doctors: list[str] = []
         self.patients: list[str] = []
 
+    # @property -> # Allows a method to be accessed like a read-only attribute
     @property
     def occupied_beds(self) -> int:
-        """Number of occupied beds."""
         return len(self.patients)
 
     @property
     def available_beds(self) -> int:
-        """Number of available beds. Uses property for encapsulation."""
         return max(0, self.total_beds - self.occupied_beds)
 
     def get_occupancy_rate(self) -> float:
         """
-        Calculate the bed occupancy rate.
+        Calculate the bed occupancy rate
 
         Returns:
             float: Occupancy rate as a percentage (0-100).
         """
-        if self.total_beds == 0:
-            return 0.0
         return round((self.occupied_beds / self.total_beds) * 100, 1)
 
     def admit_patient(self, patient_id: str) -> bool:
@@ -99,7 +83,7 @@ class Hospital(Facility):
 
     def discharge_patient(self, patient_id: str) -> bool:
         """
-        Discharge a patient from the hospital.
+        Discharge a patient from hospital
 
         Returns:
             bool: True if patient was found and discharged.
@@ -111,13 +95,12 @@ class Hospital(Facility):
 
     def apply_surge_capacity(self, multiplier: float) -> None:
         """
-        Apply surge capacity based on a multiplier.
-        In pandemic mode, beds are scaled up.
+        In pandemic mode, beds are increased up by the surge capacity multiplier
         """
         self.total_beds = int(self.base_beds * multiplier)
 
     def to_dict(self) -> dict:
-        """Serialize the hospital to a dictionary for API responses."""
+        """Convert the hospital object to a dictionary form for API responses"""
         status = self.get_status()
         status.update({
             "total_beds": self.total_beds,
@@ -132,12 +115,12 @@ class Hospital(Facility):
 
 class Pharmacy(Facility):
     """
-    A pharmacy facility with a dictionary for medication inventory.
+    A pharmacy facility with a dictionary for medication inventory
 
     Attributes:
-        inventory (dict): Maps medication names to stock amounts.
-        prescriptions_filled (int): Total prescriptions filled.
-        daily_prescriptions (int): Prescriptions filled today.
+        inventory (dict): It maps medication names with the stock amounts
+        prescriptions_filled (int): Total prescriptions filled
+        daily_prescriptions (int): Prescriptions filled today
     """
 
     def __init__(self, name: str, location: str):
@@ -174,7 +157,7 @@ class Pharmacy(Facility):
         self.daily_prescriptions = 0
 
     def to_dict(self) -> dict:
-        """Serialize the pharmacy to a dictionary for API responses."""
+        """Convert the pharmacy object to a dictionary form for API responses."""
         status = self.get_status()
 
         # List comprehension: format inventory as a list of dicts for the frontend

@@ -1,6 +1,5 @@
 """
 Simulation Mode
-===============
 Configures the simulation behaviour for Normal and Pandemic modes.
 """
 
