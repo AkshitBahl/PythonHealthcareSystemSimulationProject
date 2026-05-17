@@ -54,7 +54,7 @@ class Patient(Person):
 
     # Treatment constants
     IMMUNITY_THRESHOLD = 0.50
-    MAX_TREATMENTS = 2
+    MAX_TREATMENTS = 4
     DAYS_UNTIL_DEATH_UNADMITTED = 10
 
     # A recovered patient's reinfection chance is scaled by this factor
@@ -146,7 +146,7 @@ class Patient(Person):
             return self.health_status
 
         self.treatments_received += 1
-        self.immunity = round(self.immunity + 0.10, 2)
+        self.immunity = round(self.immunity + 0.05, 2)
 
         if self.immunity > self.IMMUNITY_THRESHOLD:
             self.health_status = "Healthy"

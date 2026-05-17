@@ -54,7 +54,7 @@ export default function PatientTable({ patients = [], hospitals = [] }) {
     }
   };
 
-  const statuses = ["All", "Healthy", "Infected", "Deceased", "Admitted"];
+  const statuses = ["All", "Healthy", "Infected", "Deceased"];
 
   const getStatusClass = (status) => status?.toLowerCase() || "";
 
@@ -123,7 +123,7 @@ export default function PatientTable({ patients = [], hospitals = [] }) {
                 <td>
                   <span style={{
                     color: p.immunity >= 0.5 ? "var(--green)" :
-                           p.immunity >= 0.3 ? "var(--amber)" : "var(--red)",
+                      p.immunity >= 0.3 ? "var(--amber)" : "var(--red)",
                     fontWeight: 600,
                   }}>
                     {Math.round(p.immunity * 100)}%
@@ -132,7 +132,7 @@ export default function PatientTable({ patients = [], hospitals = [] }) {
                 <td>
                   {p.health_status === "Infected" && p.treatments_received > 0 ? (
                     <span className="status-badge infected">
-                      {p.treatments_received} / 2
+                      {p.treatments_received} / 4
                     </span>
                   ) : p.health_status === "Infected" ? (
                     <span style={{ color: "var(--text-muted)" }}>Awaiting</span>

@@ -40,7 +40,7 @@ class Hospital(Facility):
         patients (list[str]): List of admitted patient IDs in the hospital
     """
 
-    def __init__(self, name: str, location: str, total_beds: int = 100):
+    def __init__(self, name: str, location: str, total_beds: int = 10):
         super().__init__(name, location, facility_type="Hospital")
         self.total_beds: int = total_beds
         self.base_beds: int = total_beds

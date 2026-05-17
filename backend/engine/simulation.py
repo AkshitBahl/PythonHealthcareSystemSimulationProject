@@ -65,9 +65,9 @@ class HealthcareSimulation:
 
         # --- Create facilities ---
         self.hospitals: list[Hospital] = [
-            Hospital("City General Hospital", "Downtown", total_beds=120),
-            Hospital("St. Mary's Medical Center", "Westside", total_beds=80),
-            Hospital("University Teaching Hospital", "Northgate", total_beds=100),
+            Hospital("City General Hospital", "Downtown", total_beds=6),
+            Hospital("St. Mary's Medical Center", "Westside", total_beds=8),
+            Hospital("University Teaching Hospital", "Northgate", total_beds=5),
         ]
         self.pharmacies: list[Pharmacy] = [
             Pharmacy("Central Pharmacy", "Downtown"),
@@ -264,7 +264,7 @@ class HealthcareSimulation:
         Treat all admitted infected patients.
 
         Each treatment: doctor's assigned patient gets 1 medicine from
-        pharmacy, immunity +0.10. After up to 2 treatments, patient
+        pharmacy, immunity +0.05. After up to 4 treatments, patient
         becomes Healthy (immunity > 0.50) or Deceased.
 
         Uses filter() to find patients needing treatment.
