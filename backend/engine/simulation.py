@@ -4,7 +4,6 @@ from functools import reduce
 from backend.models.person import Patient, Doctor
 from backend.models.facility import Hospital, Pharmacy
 from backend.models.simulation_mode import SimulationMode
-from backend.engine.pandemic import PandemicEngine
 
 # --- Name data to generate the population/patient ---
 FIRST_NAMES_MALE = [
@@ -44,16 +43,22 @@ class HealthcareSimulation:
         doctors (list[Doctor]): All doctors in the simulation.
         hospitals (list[Hospital]): All hospitals.
         pharmacies (list[Pharmacy]): All pharmacies.
-        pandemic_engine (PandemicEngine): Handles pandemic-specific logic.
-        pandemic_seeded (bool): Whether initial infections have been seeded.
+        total_infections (int): Cumulative infections since the last reset.
+        total_deaths (int): Cumulative deaths since the last reset.
+        daily_new_infections (int): New infections recorded on the current day.
+        daily_new_deaths (int): New deaths recorded on the current day.
     """
 
     def __init__(self, num_patients: int = 50):
         self.num_patients: int = num_patients
         self.day: int = 0
         self.mode: SimulationMode = SimulationMode("normal")
-        self.pandemic_engine: PandemicEngine = PandemicEngine()
-        self.pandemic_seeded: bool = False
+
+        # --- Infection tracking counters ---
+        self.total_infections: int = 0
+        self.total_deaths: int = 0
+        self.daily_new_infections: int = 0
+        self.daily_new_deaths: int = 0
 
         # --- Multiple instantiation: Generate population ---
         self.patients: list[Patient] = self._generate_patients(num_patients)
@@ -121,12 +126,15 @@ class HealthcareSimulation:
         """
         Advance the simulation by one day.
 
-        1. Updates patient health states (using map())
-        2. Handles admissions for infected patients (using filter())
-        3. Treats admitted infected patients (doctor + pharmacy)
-        4. Handles discharges for healthy/deceased patients
-        5. In pandemic mode: runs infection spread
-        6. Records statistics
+        The same pipeline runs for both modes:
+        1. Spread infection and update every patient's health (map())
+        2. Admit infected patients who need a bed (using filter())
+        3. Treat admitted infected patients (doctor + pharmacy)
+        4. Discharge healthy/deceased patients (using filter())
+        5. Record statistics and return a snapshot
+
+        Normal and Pandemic modes differ only in the infection rate and
+        the surge capacity applied to hospital beds and doctor capacity.
 
         Returns:
             dict: Snapshot of the simulation state after the tick.
@@ -137,35 +145,8 @@ class HealthcareSimulation:
         for pharmacy in self.pharmacies:
             pharmacy.reset_daily_count()
 
-        # --- Pandemic mode: seed infection if not done ---
-        if self.mode.is_pandemic and not self.pandemic_seeded:
-            self.pandemic_engine.seed_infection(self.patients, count=5)
-            self.pandemic_seeded = True
-            # Apply surge capacity to hospitals
-            for hospital in self.hospitals:
-                hospital.apply_surge_capacity(self.mode.surge_capacity_multiplier)
-
-        # --- Update health for all patients ---
-        if self.mode.is_pandemic:
-            # Pandemic: use pandemic engine for infection spread
-            pandemic_result = self.pandemic_engine.spread_infection(
-                self.patients, self.mode
-            )
-        else:
-            # Normal: use map() to apply health updates to all patients
-            list(map(lambda p: p.update_health(is_pandemic=False), self.patients))
-
-            # Population-level infection: infect exactly 2% of healthy patients
-            healthy_alive = [p for p in self.patients if p.health_status == "Healthy"]
-            num_to_infect = round(len(healthy_alive) * self.mode.infection_rate)
-            if num_to_infect > 0 and healthy_alive:
-                to_infect = random.sample(
-                    healthy_alive, min(num_to_infect, len(healthy_alive))
-                )
-                for p in to_infect:
-                    p.infect()
-
-            pandemic_result = None
+        # --- Spread infection and update health for all patients ---
+        self._spread_infection()
 
         # --- Handle hospital admissions ---
         # filter() to find infected patients who need admission
@@ -192,6 +173,49 @@ class HealthcareSimulation:
             self._discharge_patient(patient)
 
         return self.get_state()
+
+    def _spread_infection(self) -> None:
+        """
+        Spread infection across the population and update everyone's health.
+
+        Infects a flat percentage of healthy patients based on the active
+        mode's infection rate (higher in pandemic mode), then advances every
+        patient's health state. Records the daily and cumulative infection
+        and death counts.
+        """
+        self.daily_new_infections = 0
+        self.daily_new_deaths = 0
+
+        # filter() to find susceptible (healthy) patients
+        susceptible = list(filter(
+            lambda p: p.health_status == "Healthy",
+            self.patients
+        ))
+
+        # Population-level infection: infect a percentage of healthy patients
+        num_to_infect = round(len(susceptible) * self.mode.infection_rate)
+        if num_to_infect > 0 and susceptible:
+            to_infect = random.sample(
+                susceptible, min(num_to_infect, len(susceptible))
+            )
+            for patient in to_infect:
+                patient.infect()
+                self.daily_new_infections += 1
+                self.total_infections += 1
+
+        # map() to apply health updates to all patients
+        previous_statuses = {p.id: p.health_status for p in self.patients}
+        list(map(
+            lambda p: p.update_health(is_pandemic=self.mode.is_pandemic),
+            self.patients
+        ))
+
+        # Count deaths by checking the status changes
+        for patient in self.patients:
+            prev = previous_statuses.get(patient.id)
+            if prev != "Deceased" and patient.health_status == "Deceased":
+                self.daily_new_deaths += 1
+                self.total_deaths += 1
 
     def _try_admit_patient(self, patient: Patient) -> bool:
         """
@@ -275,9 +299,45 @@ class HealthcareSimulation:
         matches = [d for d in self.doctors if d.id == doctor_id]
         return matches[0] if matches else None
 
+    def _get_sir_counts(self) -> dict:
+        """
+        Count patients in each health compartment.
+
+        Returns:
+            dict: Counts for healthy, infected, deceased, and total.
+        """
+        healthy = len([p for p in self.patients if p.health_status == "Healthy"])
+        infected = len([p for p in self.patients if p.health_status == "Infected"])
+        deceased = len([p for p in self.patients if p.health_status == "Deceased"])
+
+        return {
+            "healthy": healthy,
+            "infected": infected,
+            "deceased": deceased,
+            "total": len(self.patients),
+        }
+
+    def _get_pandemic_stats(self) -> dict:
+        """
+        Build the pandemic statistics block for API responses.
+
+        Returns:
+            dict: Cumulative and daily infection and death counts.
+        """
+        return {
+            "total_infections": self.total_infections,
+            "total_deaths": self.total_deaths,
+            "daily_new_infections": self.daily_new_infections,
+            "daily_new_deaths": self.daily_new_deaths,
+        }
+
     def set_mode(self, mode: str) -> dict:
         """
-        Switch the simulation mode.
+        Switch the simulation mode and apply its surge capacity.
+
+        Pandemic mode scales up hospital bed capacity and each doctor's
+        patient load via the surge multiplier. Normal mode restores base
+        capacity and clears the pandemic infection counters.
 
         Args:
             mode: 'normal' or 'pandemic'.
@@ -287,13 +347,19 @@ class HealthcareSimulation:
         """
         self.mode.set_mode(mode)
 
+        # Apply surge capacity to hospitals and doctors for the new mode
+        multiplier = self.mode.surge_capacity_multiplier
+        for hospital in self.hospitals:
+            hospital.apply_surge_capacity(multiplier)
+        for doctor in self.doctors:
+            doctor.apply_surge_capacity(multiplier)
+
+        # Returning to normal clears the pandemic infection counters
         if mode == "normal":
-            # Reset pandemic tracking
-            self.pandemic_seeded = False
-            self.pandemic_engine.reset()
-            # Reset hospital capacity to base
-            for hospital in self.hospitals:
-                hospital.apply_surge_capacity(self.mode.surge_capacity_multiplier)
+            self.total_infections = 0
+            self.total_deaths = 0
+            self.daily_new_infections = 0
+            self.daily_new_deaths = 0
 
         return self.mode.to_dict()
 
@@ -349,8 +415,8 @@ class HealthcareSimulation:
             "doctors": doctors_data,
             "hospitals": hospitals_data,
             "pharmacies": pharmacies_data,
-            "pandemic": self.pandemic_engine.to_dict() if self.mode.is_pandemic else None,
-            "sir": self.pandemic_engine.get_sir_counts(self.patients) if self.mode.is_pandemic else None,
+            "pandemic": self._get_pandemic_stats() if self.mode.is_pandemic else None,
+            "sir": self._get_sir_counts() if self.mode.is_pandemic else None,
         }
 
     def reset(self) -> None:
