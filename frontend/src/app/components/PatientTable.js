@@ -29,6 +29,10 @@ export default function PatientTable({ patients = [], hospitals = [] }) {
   const filtered = useMemo(() => {
     if (filter === "All") return patients;
     if (filter === "Admitted") return patients.filter((p) => p.admitted);
+    if (filter === "Infected & Unadmitted")
+      return patients.filter(
+        (p) => p.health_status === "Infected" && !p.admitted
+      );
     return patients.filter((p) => p.health_status === filter);
   }, [patients, filter]);
 
@@ -54,7 +58,7 @@ export default function PatientTable({ patients = [], hospitals = [] }) {
     }
   };
 
-  const statuses = ["All", "Healthy", "Infected", "Deceased"];
+  const statuses = ["All", "Healthy", "Infected", "Infected & Unadmitted", "Deceased"];
 
   const getStatusClass = (status) => status?.toLowerCase() || "";
 

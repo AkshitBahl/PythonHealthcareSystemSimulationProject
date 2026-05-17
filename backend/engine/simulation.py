@@ -130,7 +130,12 @@ class HealthcareSimulation:
         2. Admit infected patients who need a bed (using filter())
         3. Treat admitted infected patients (doctor + pharmacy)
         4. Discharge healthy/deceased patients (using filter())
-        5. Record statistics and return a snapshot
+        5. Re-admit waiting infected patients into newly freed beds (using filter())
+        6. Record statistics and return a snapshot
+
+        Step 5 ensures that beds freed by recovered/deceased patients in the
+        same tick are immediately offered to waiting infected patients, so the
+        UI never shows "Awaiting" patients while beds are vacant.
 
         Normal and Pandemic modes differ only in the infection rate and
         the surge capacity applied to hospital beds and doctor capacity.
@@ -147,7 +152,7 @@ class HealthcareSimulation:
         # --- Spread infection and update health for all patients ---
         self._spread_infection()
 
-        # --- Handle hospital admissions ---
+        # --- First admission pass ---
         # filter() to find infected patients who need admission
         needs_admission = list(filter(
             lambda p: p.health_status == "Infected"
@@ -170,6 +175,17 @@ class HealthcareSimulation:
 
         for patient in can_discharge:
             self._discharge_patient(patient)
+
+        # --- Second admission pass (fill beds freed by discharges) ---
+        # filter() to find infected patients still waiting after discharges
+        still_waiting = list(filter(
+            lambda p: p.health_status == "Infected"
+                      and not p.admitted,
+            self.patients
+        ))
+
+        for patient in still_waiting:
+            self._try_admit_patient(patient)
 
         return self.get_state()
 
