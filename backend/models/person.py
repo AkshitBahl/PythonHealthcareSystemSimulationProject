@@ -55,7 +55,7 @@ class Patient(Person):
     # Treatment constants
     IMMUNITY_THRESHOLD = 0.50
     MAX_TREATMENTS = 4
-    DAYS_UNTIL_DEATH_UNADMITTED = 10
+    DAYS_UNTIL_DEATH_UNADMITTED = 5
 
     # A recovered patient's reinfection chance is scaled by this factor
     # (0.05 = 95% less likely to be reinfected than a never-infected patient)
@@ -107,7 +107,7 @@ class Patient(Person):
         - Deceased: no change in patient's health status
         - Healthy: random chance of getting infected (higher in pandemic
           mode); recovered patients usually resist reinfection
-        - Infected: In case of unadmitted, the patient die after 10 days without treatment
+        - Infected: In case of unadmitted, the patient die after 5 days without treatment
         In case of admitted, no change in patient's health status.
 
         Returns:
