@@ -199,6 +199,10 @@ class HealthcareSimulation:
                 susceptible, min(num_to_infect, len(susceptible))
             )
             for patient in to_infect:
+                # Recovered patients carry acquired immunity and usually
+                # resist reinfection
+                if patient.resists_infection():
+                    continue
                 patient.infect()
                 self.daily_new_infections += 1
                 self.total_infections += 1

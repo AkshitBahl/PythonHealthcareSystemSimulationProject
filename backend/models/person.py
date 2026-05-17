@@ -42,6 +42,8 @@ class Patient(Person):
         immunity (float): Immunity level 0.0 – 0.5
         days_infected (int): No. of days the patient has been infected
         treatments_received (int): No. of treatments received
+        recovered (bool): Whether the patient has recovered from a prior
+            infection — grants strong resistance to reinfection
         admitted (bool): Whether the patient is admitted to a facility
         assigned_doctor (str): ID of the assigned doctor
         assigned_facility (str): ID of the facility the patient is assigned to
@@ -55,12 +57,17 @@ class Patient(Person):
     MAX_TREATMENTS = 2
     DAYS_UNTIL_DEATH_UNADMITTED = 10
 
+    # A recovered patient's reinfection chance is scaled by this factor
+    # (0.05 = 95% less likely to be reinfected than a never-infected patient)
+    RECOVERED_REINFECTION_FACTOR = 0.05
+
     def __init__(self, name: str, age: int, gender: str, contact: str = ""):
         super().__init__(name, age, gender, contact)
         self.health_status: str = "Healthy" # The patient starts out healthy
         self.immunity: float = round(random.uniform(0.1,0.5), 2)
         self.days_infected: int = 0
         self.treatments_received: int = 0
+        self.recovered: bool = False
         self.admitted: bool = False
         self.assigned_doctor: Optional[str] = None
         self.assigned_facility: Optional[str] = None
@@ -78,12 +85,28 @@ class Patient(Person):
             self.days_infected = 0
             self.treatments_received = 0
 
+    def resists_infection(self) -> bool:
+        """
+        Decide whether the patient fends off an infection attempt.
+
+        A patient who has recovered from a previous infection carries
+        acquired immunity and resists reinfection the vast majority of the
+        time. A patient who has never been infected never resists.
+
+        Returns:
+            bool: True if the infection attempt is resisted (no infection).
+        """
+        if not self.recovered:
+            return False
+        return random.random() >= self.RECOVERED_REINFECTION_FACTOR
+
     def update_health(self, is_pandemic: bool = False) -> str:
         """
         Update the patient's health status based on the simulation mode
 
         - Deceased: no change in patient's health status
-        - Healthy: random chance of getting infected (higher in pandemic mode)
+        - Healthy: random chance of getting infected (higher in pandemic
+          mode); recovered patients usually resist reinfection
         - Infected: In case of unadmitted, the patient die after 10 days without treatment
         In case of admitted, no change in patient's health status.
 
@@ -101,7 +124,7 @@ class Patient(Person):
 
         elif self.health_status == "Healthy":
             sick_chance = 0.02 if not is_pandemic else 0.08
-            if random.random() < sick_chance:
+            if random.random() < sick_chance and not self.resists_infection():
                 self.infect()
 
         return self.health_status
@@ -130,6 +153,7 @@ class Patient(Person):
             self.days_infected = 0
             self.treatments_received = 0
             self.immunity = round(random.uniform(0.10,0.80), 2)
+            self.recovered = True
         elif self.treatments_received >= self.MAX_TREATMENTS:
             self.health_status = "Deceased"
 
