@@ -4,7 +4,7 @@ REST API Routes
 Defines all REST endpoints for the healthcare simulation API.
 
 Endpoints:
-- GET  /api/status             — Full simulation snapshot
+- GET  /api/status              — Full simulation snapshot
 - GET  /api/hospitals           — All hospitals with occupancy
 - GET  /api/patients            — All patients with status
 - GET  /api/doctors             — All doctors

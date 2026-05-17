@@ -2,7 +2,6 @@
 
 import Sidebar from "./components/Sidebar";
 import StatCard from "./components/StatCard";
-import BedChart from "./components/BedChart";
 import PatientTable from "./components/PatientTable";
 import { useSimulation } from "./hooks/useSimulation";
 
@@ -23,9 +22,9 @@ export default function DashboardPage() {
         <Sidebar
           data={null}
           connected={connected}
-          onToggleMode={() => {}}
-          onReset={() => {}}
-          onTick={() => {}}
+          onToggleMode={() => { }}
+          onReset={() => { }}
+          onTick={() => { }}
         />
         <main className="main-content">
           <div className="loading-container">
@@ -119,11 +118,6 @@ export default function DashboardPage() {
             sub="Current simulation day"
             color="cyan"
           />
-        </div>
-
-        {/* Charts */}
-        <div className="charts-grid">
-          <BedChart hospitals={hospitals} />
         </div>
 
         {/* Patient Table */}
