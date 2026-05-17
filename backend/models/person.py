@@ -156,13 +156,15 @@ class Doctor(Person):
     Attributes:
         assigned_facility (str | None): ID of the facility the doctor works at.
         assigned_patients (list[str]): List of patient IDs currently under care.
+        base_max_patients (int): Original max patient capacity (before surge).
         max_patients (int): Maximum number of patients the doctor can handle.
         available (bool): Whether the doctor is currently available.
     """
     def __init__(self, name: str, age: int, gender: str, contact: str = ""):
         super().__init__(name, age, gender, contact)
         self.assigned_patients: list[str] = []
-        self.max_patients: int = 8
+        self.base_max_patients: int = 8
+        self.max_patients: int = self.base_max_patients
         self.assigned_facility: Optional[str] = None
         self.available: bool = True
 
@@ -184,6 +186,13 @@ class Doctor(Person):
             self.assigned_patients.remove(patient_id)
             return True
         return False
+
+    def apply_surge_capacity(self, multiplier: float) -> None:
+        """
+        In pandemic mode, the doctor's max patient capacity is scaled up
+        by the surge capacity multiplier.
+        """
+        self.max_patients = int(self.base_max_patients * multiplier)
 
     def diagnose(self, patient: "Patient") -> str:
         """
