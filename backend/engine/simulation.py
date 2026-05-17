@@ -24,8 +24,7 @@ LAST_NAMES = [
 ]
 
 # Medicine mapping
-MEDICATIONS = ["Paracetamol", "Amoxicillin", "Ibuprofen", "Dexamethasone",
-               "Remdesivir", "Aspirin", "Oseltamivir"]
+MEDICATIONS = ["Paracetamol"]
 
 
 class HealthcareSimulation:
@@ -303,7 +302,7 @@ class HealthcareSimulation:
         matches = [d for d in self.doctors if d.id == doctor_id]
         return matches[0] if matches else None
 
-    def _get_sir_counts(self) -> dict:
+    def _get_health_updates(self) -> dict:
         """
         Count patients in each health compartment.
 
@@ -420,7 +419,7 @@ class HealthcareSimulation:
             "hospitals": hospitals_data,
             "pharmacies": pharmacies_data,
             "pandemic": self._get_pandemic_stats() if self.mode.is_pandemic else None,
-            "sir": self._get_sir_counts() if self.mode.is_pandemic else None,
+            "sir": self._get_health_updates() if self.mode.is_pandemic else None,
         }
 
     def reset(self) -> None:

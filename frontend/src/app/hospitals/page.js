@@ -1,7 +1,6 @@
 "use client";
 
 import Sidebar from "../components/Sidebar";
-import BedChart from "../components/BedChart";
 import { useSimulation } from "../hooks/useSimulation";
 
 /**
@@ -18,7 +17,7 @@ export default function HospitalsPage() {
   if (!data) {
     return (
       <div className="app-layout">
-        <Sidebar data={null} connected={connected} onToggleMode={() => {}} onReset={() => {}} onTick={() => {}} />
+        <Sidebar data={null} connected={connected} onToggleMode={() => { }} onReset={() => { }} onTick={() => { }} />
         <main className="main-content">
           <div className="loading-container"><div className="loading-spinner" /><div className="loading-text">Loading hospitals...</div></div>
         </main>
@@ -42,11 +41,6 @@ export default function HospitalsPage() {
         <div className="page-header fade-in">
           <h2>Hospitals</h2>
           <p>Hospital capacity, bed occupancy, and staff assignments — Day {data.day}</p>
-        </div>
-
-        {/* Bed Chart */}
-        <div style={{ marginBottom: "28px" }}>
-          <BedChart hospitals={hospitals} />
         </div>
 
         {/* Hospital Cards */}

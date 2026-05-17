@@ -124,14 +124,7 @@ class Pharmacy(Facility):
         self.prescriptions_filled: int = 0
         self.daily_prescriptions: int = 0
         self.inventory: dict[str, int] = {
-            "Paracetamol": 500,
-            "Amoxicillin": 200,
-            "Ibuprofen": 400,
-            "Dexamethasone": 300,
-            "Remdesivir": 50,
-            "Aspirin": 350,
-            "COVID Vaccine": 100,
-            "Oseltamivir": 80,
+            "Paracetamol": 100,
         }
 
     def fill_prescription(self, medication_name: str, quantity: int = 1) -> bool:

@@ -23,7 +23,6 @@ export default function Sidebar({ data, connected, onToggleMode, onReset, onTick
     { href: "/hospitals", label: "Hospitals", icon: "H" },
     { href: "/patients", label: "Patients", icon: "P" },
     { href: "/pharmacy", label: "Pharmacy", icon: "Rx" },
-    { href: "/pandemic", label: "Pandemic", icon: "V" },
   ];
 
   return (

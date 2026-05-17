@@ -5,14 +5,12 @@ import StatCard from "./components/StatCard";
 import PatientTable from "./components/PatientTable";
 import { useSimulation } from "./hooks/useSimulation";
 
-/**
- * Dashboard Home Page
- *
- * Main overview page showing:
- * - KPI stat cards (patients, beds, infections, pharmacy)
- * - Bed occupancy chart
- * - Quick patient overview table
- */
+/*
+ Dashboard Home Page
+ KPI stat cards (patients, beds, infections, pharmacy)
+ Bed occupancy chart
+ Quick patient overview table
+*/
 export default function DashboardPage() {
   const { data, connected, toggleMode, tickSim, resetSim } = useSimulation();
 

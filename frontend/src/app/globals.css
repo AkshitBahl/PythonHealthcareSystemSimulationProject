@@ -1,26 +1,20 @@
-/* ======================================================
-   Healthcare Simulation Dashboard — Styles
-   ======================================================
-   Clean dark theme with functional layout.
-   ====================================================== */
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* --- CSS Custom Properties --- */
+/* Custom Properties */
 :root {
-  /* Background */
-  --bg-primary: #0f1117;
-  --bg-secondary: #161922;
-  --bg-card: #1c1f2b;
-  --bg-card-hover: #22263a;
-  --bg-glass: rgba(255, 255, 255, 0.04);
-  --bg-sidebar: #13151e;
+  /* Background — light green theme */
+  --bg-primary: #e9f4eb;
+  --bg-secondary: #dfeee2;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f0f8f1;
+  --bg-glass: rgba(16, 122, 78, 0.06);
+  --bg-sidebar: #dbebde;
 
   /* Text */
-  --text-primary: #e0e4ec;
-  --text-secondary: #8892a8;
-  --text-muted: #5a6478;
-  --text-accent: #60a5fa;
+  --text-primary: #15291c;
+  --text-secondary: #436151;
+  --text-muted: #789382;
+  --text-accent: #0e9f63;
 
   /* Colors */
   --blue: #3b82f6;
@@ -31,11 +25,11 @@
   --cyan: #06b6d4;
 
   /* Borders */
-  --border-color: rgba(255, 255, 255, 0.08);
+  --border-color: rgba(20, 60, 38, 0.15);
 
   /* Shadows */
-  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 4px rgba(20, 50, 30, 0.08);
+  --shadow-md: 0 2px 10px rgba(20, 50, 30, 0.12);
 
   /* Spacing */
   --sidebar-width: 240px;
@@ -121,7 +115,7 @@ a {
 .sidebar-logo-icon {
   width: 36px;
   height: 36px;
-  background: var(--blue);
+  background: var(--green);
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
@@ -187,7 +181,7 @@ a {
 
 .nav-link.active {
   color: var(--text-primary);
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(16, 185, 129, 0.16);
 }
 
 .nav-icon {
@@ -199,7 +193,7 @@ a {
 }
 
 .nav-link.active .nav-icon {
-  color: var(--blue);
+  color: var(--green);
 }
 
 .sidebar-footer {
@@ -251,40 +245,42 @@ a {
 .sim-controls {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .day-badge {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 14px;
+  gap: 8px;
+  padding: 13px 18px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .day-badge span {
   color: var(--cyan);
+  font-size: 22px;
+  font-weight: 700;
 }
 
 .sim-buttons {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .sim-btn {
   flex: 1;
-  padding: 7px;
+  padding: 13px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   background: var(--bg-card);
   color: var(--text-secondary);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-base);
@@ -300,11 +296,11 @@ a {
 }
 
 .sim-btn.step {
-  max-width: 50px;
+  max-width: 68px;
 }
 
 .sim-btn.reset {
-  border-color: rgba(239, 68, 68, 0.3);
+  border-color: rgba(239, 68, 68, 0.4);
   color: var(--red);
 }
 
@@ -354,12 +350,29 @@ a {
   margin-bottom: 14px;
 }
 
-.stat-card.blue::before { background: var(--blue); }
-.stat-card.green::before { background: var(--green); }
-.stat-card.red::before { background: var(--red); }
-.stat-card.amber::before { background: var(--amber); }
-.stat-card.purple::before { background: var(--purple); }
-.stat-card.cyan::before { background: var(--cyan); }
+.stat-card.blue::before {
+  background: var(--blue);
+}
+
+.stat-card.green::before {
+  background: var(--green);
+}
+
+.stat-card.red::before {
+  background: var(--red);
+}
+
+.stat-card.amber::before {
+  background: var(--amber);
+}
+
+.stat-card.purple::before {
+  background: var(--purple);
+}
+
+.stat-card.cyan::before {
+  background: var(--cyan);
+}
 
 .stat-card:hover {
   background: var(--bg-card-hover);
@@ -464,7 +477,7 @@ a {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px solid var(--border-color);
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(16, 122, 78, 0.08);
   position: sticky;
   top: 0;
 }
@@ -481,7 +494,7 @@ a {
   padding: 10px 18px;
   font-size: 12px;
   color: var(--text-secondary);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(20, 60, 38, 0.07);
 }
 
 /* --- Status Badges --- */
@@ -498,43 +511,43 @@ a {
 }
 
 .status-badge.healthy {
-  background: rgba(16, 185, 129, 0.12);
-  color: #34d399;
+  background: rgba(16, 185, 129, 0.16);
+  color: #047857;
 }
 
 .status-badge.mild {
-  background: rgba(245, 158, 11, 0.12);
-  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.16);
+  color: #b45309;
 }
 
 .status-badge.severe {
-  background: rgba(249, 115, 22, 0.12);
-  color: #fb923c;
+  background: rgba(249, 115, 22, 0.16);
+  color: #c2410c;
 }
 
 .status-badge.critical {
-  background: rgba(239, 68, 68, 0.12);
-  color: #f87171;
+  background: rgba(239, 68, 68, 0.16);
+  color: #dc2626;
 }
 
 .status-badge.recovered {
-  background: rgba(59, 130, 246, 0.12);
-  color: #60a5fa;
+  background: rgba(59, 130, 246, 0.16);
+  color: #1d4ed8;
 }
 
 .status-badge.deceased {
-  background: rgba(107, 114, 128, 0.12);
-  color: #9ca3af;
+  background: rgba(107, 114, 128, 0.16);
+  color: #4b5563;
 }
 
 .status-badge.infected {
-  background: rgba(236, 72, 153, 0.12);
-  color: #f472b6;
+  background: rgba(236, 72, 153, 0.16);
+  color: #be185d;
 }
 
 .status-badge.admitted {
-  background: rgba(139, 92, 246, 0.12);
-  color: #a78bfa;
+  background: rgba(139, 92, 246, 0.16);
+  color: #6d28d9;
 }
 
 /* --- Hospital Cards --- */
@@ -628,7 +641,7 @@ a {
 
 .occupancy-bar {
   height: 6px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(20, 60, 38, 0.10);
   border-radius: var(--radius-full);
   overflow: hidden;
 }
@@ -757,10 +770,21 @@ a {
   font-weight: 600;
 }
 
-.sir-card.susceptible .sir-card-value { color: var(--amber); }
-.sir-card.infected .sir-card-value { color: var(--red); }
-.sir-card.recovered .sir-card-value { color: var(--green); }
-.sir-card.deceased .sir-card-value { color: var(--text-muted); }
+.sir-card.susceptible .sir-card-value {
+  color: var(--amber);
+}
+
+.sir-card.infected .sir-card-value {
+  color: var(--red);
+}
+
+.sir-card.recovered .sir-card-value {
+  color: var(--green);
+}
+
+.sir-card.deceased .sir-card-value {
+  color: var(--text-muted);
+}
 
 /* --- Empty State --- */
 .empty-state {
@@ -802,13 +826,15 @@ a {
   width: 36px;
   height: 36px;
   border: 3px solid var(--border-color);
-  border-top-color: var(--blue);
+  border-top-color: var(--green);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-text {
@@ -823,8 +849,13 @@ a {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* --- Responsive --- */
@@ -832,20 +863,24 @@ a {
   .sidebar {
     width: 60px;
   }
+
   .sidebar-logo-text,
   .nav-section-label,
   .nav-link span:not(.nav-icon),
   .mode-toggle-wrapper .mode-option {
     display: none;
   }
+
   .nav-link {
     justify-content: center;
     padding: 10px;
   }
+
   .main-content {
     margin-left: 60px;
     padding: 20px;
   }
+
   .charts-grid {
     grid-template-columns: 1fr;
   }
@@ -855,9 +890,11 @@ a {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .hospitals-grid {
     grid-template-columns: 1fr;
   }
+
   .main-content {
     padding: 14px;
   }
@@ -874,10 +911,10 @@ a {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(20, 60, 38, 0.18);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(20, 60, 38, 0.32);
 }
