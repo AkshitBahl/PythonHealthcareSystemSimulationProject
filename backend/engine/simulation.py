@@ -224,10 +224,7 @@ class HealthcareSimulation:
 
         # map() to apply health updates to all patients
         previous_statuses = {p.id: p.health_status for p in self.patients}
-        list(map(
-            lambda p: p.update_health(is_pandemic=self.mode.is_pandemic),
-            self.patients
-        ))
+        list(map(lambda p: p.update_health(), self.patients))
 
         # Count deaths by checking the status changes
         for patient in self.patients:
@@ -281,7 +278,8 @@ class HealthcareSimulation:
 
         Each treatment: doctor's assigned patient gets 1 medicine from
         pharmacy, immunity +0.05. After up to 4 treatments, patient
-        becomes Healthy (immunity > 0.50) or Deceased.
+        becomes Healthy (immunity > 0.50) or Deceased. Deaths that
+        happen here are added to the daily and cumulative death counters.
 
         Uses filter() to find patients needing treatment.
         """
@@ -295,7 +293,11 @@ class HealthcareSimulation:
             # Dispense 1 medication from a pharmacy
             self._dispense_medication_for_patient(patient)
             # Apply treatment (immunity boost + threshold check)
+            prev_status = patient.health_status
             patient.treat()
+            if prev_status != "Deceased" and patient.health_status == "Deceased":
+                self.daily_new_deaths += 1
+                self.total_deaths += 1
 
     def _dispense_medication_for_patient(self, patient: Patient) -> None:
         """Dispense one medication from a pharmacy for a patient's treatment."""

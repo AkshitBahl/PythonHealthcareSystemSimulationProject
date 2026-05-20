@@ -80,7 +80,7 @@ class Patient(Person):
 
     def infect(self) -> None:
         """Infect the patient"""
-        if self.health_status is not ["Infected", "Deceased"]:
+        if self.health_status not in ["Infected", "Deceased"]:
             self.health_status = "Infected"
             self.days_infected = 0
             self.treatments_received = 0
@@ -100,15 +100,16 @@ class Patient(Person):
             return False
         return random.random() >= self.RECOVERED_REINFECTION_FACTOR
 
-    def update_health(self, is_pandemic: bool = False) -> str:
+    def update_health(self) -> str:
         """
-        Update the patient's health status based on the simulation mode
+        Progress the patient's health by one day.
 
-        - Deceased: no change in patient's health status
-        - Healthy: random chance of getting infected (higher in pandemic
-          mode); recovered patients usually resist reinfection
-        - Infected: In case of unadmitted, the patient die after 5 days without treatment
-        In case of admitted, no change in patient's health status.
+        - Deceased: no change
+        - Infected: increment days_infected; if the patient is unadmitted
+          and has been infected for at least DAYS_UNTIL_DEATH_UNADMITTED
+          days, they die
+        - Healthy: no change (infection is applied at the simulation
+          level by HealthcareSimulation._spread_infection)
 
         Returns:
             str: The updated health status.
@@ -118,14 +119,8 @@ class Patient(Person):
 
         if self.health_status == "Infected":
             self.days_infected += 1
-            # Unadmitted infected patients die after 10 days
             if not self.admitted and self.days_infected >= self.DAYS_UNTIL_DEATH_UNADMITTED:
                 self.health_status = "Deceased"
-
-        elif self.health_status == "Healthy":
-            sick_chance = 0.02 if not is_pandemic else 0.08
-            if random.random() < sick_chance and not self.resists_infection():
-                self.infect()
 
         return self.health_status
 
