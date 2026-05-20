@@ -1,6 +1,6 @@
 """
 FastAPI Application
-===================
+
 Main FastAPI application that:
 - Initializes the healthcare simulation
 - Mounts REST endpoints
@@ -16,18 +16,18 @@ from backend.engine.simulation import HealthcareSimulation
 from backend.api.routes import create_routes
 from backend import config
 
-# --- Global simulation ---
+# Global simulation 
 simulation = HealthcareSimulation(num_patients=config.DEFAULT_POPULATION)
 
 
-# --- Create FastAPI app ---
+# Create FastAPI app 
 app = FastAPI(
     title="Healthcare Simulation System",
     description="Healthcare network simulation with Normal and Pandemic modes (REST API)",
     version="2.0.0",
 )
 
-# --- CORS middleware for Next.js frontend ---
+# CORS middleware for Next.js frontend 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
@@ -36,12 +36,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- Mount REST routes ---
+# Mount REST routes 
 router = create_routes(simulation)
 app.include_router(router)
 
 
-# --- Health check ---
+# Health check 
 @app.get("/")
 async def root():
     """Health check endpoint."""

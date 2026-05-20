@@ -29,7 +29,7 @@ class SimulationMode:
         self.infection_rate: float = params["infection_rate"]
         self.surge_capacity_multiplier: float = params["surge_capacity_multiplier"]
 
-    # @property -> # Allows a method to be accessed like a read-only attribute
+    # @property  # Allows a method to be accessed like a read-only attribute
     @property
     def is_pandemic(self) -> bool:
         """Check if the current mode is Pandemic"""

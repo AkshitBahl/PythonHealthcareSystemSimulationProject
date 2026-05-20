@@ -39,7 +39,6 @@ export default function DashboardPage() {
   const hospitals = data.hospitals || [];
   const patients = data.patients || [];
   const pharmacies = data.pharmacies || [];
-  const sir = data.sir;
 
   // Calculate pharmacy stock
   const totalStock = pharmacies.reduce((acc, p) => {
@@ -95,7 +94,7 @@ export default function DashboardPage() {
           <StatCard
             label="Active Infections"
             value={infectedCount}
-            sub={mode.is_pandemic ? `${sir?.healthy || 0} healthy · ${sir?.deceased || 0} deceased` : "Normal operations"}
+            sub={mode.is_pandemic ? `${statusCounts.Healthy || 0} healthy · ${statusCounts.Deceased || 0} deceased` : "Normal operations"}
             color={infectedCount > 0 ? "red" : "green"}
           />
           <StatCard

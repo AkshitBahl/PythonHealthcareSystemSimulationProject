@@ -1,6 +1,6 @@
 """
 Configuration
-=============
+
 Global settings and constants for the healthcare simulation.
 """
 

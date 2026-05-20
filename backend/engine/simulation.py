@@ -5,7 +5,7 @@ from backend.models.person import Patient, Doctor
 from backend.models.facility import Hospital, Pharmacy
 from backend.models.simulation_mode import SimulationMode
 
-# --- Name data to generate the population/patient ---
+# Name data to generate the population/patient
 FIRST_NAMES_MALE = [
     "James", "Robert", "John", "Michael", "David", "William", "Richard",
     "Joseph", "Thomas", "Christopher", "Daniel", "Matthew", "Anthony",
@@ -53,17 +53,17 @@ class HealthcareSimulation:
         self.day: int = 0
         self.mode: SimulationMode = SimulationMode("normal")
 
-        # --- Infection tracking counters ---
+        # Infection tracking counters
         self.total_infections: int = 0
         self.total_deaths: int = 0
         self.daily_new_infections: int = 0
         self.daily_new_deaths: int = 0
 
-        # --- Multiple instantiation: Generate population ---
+        # Multiple instantiation: Generate population
         self.patients: list[Patient] = self._generate_patients(num_patients)
         self.doctors: list[Doctor] = self._generate_doctors(12)
 
-        # --- Create facilities ---
+        # Create facilities
         self.hospitals: list[Hospital] = [
             Hospital("City General Hospital", "Downtown", total_beds=6),
             Hospital("St. Mary's Medical Center", "Westside", total_beds=8),
@@ -74,7 +74,7 @@ class HealthcareSimulation:
             Pharmacy("HealthPlus Pharmacy", "Eastside"),
         ]
 
-        # --- Assign doctors to facilities ---
+        # Assign doctors to facilities
         self._assign_staff_to_facilities()
 
     def _generate_patients(self, count: int) -> list[Patient]:
@@ -145,11 +145,11 @@ class HealthcareSimulation:
         """
         self.day += 1
 
-        # --- Reset daily counters ---
+        # Reset daily counters
         for pharmacy in self.pharmacies:
             pharmacy.reset_daily_count()
 
-        # --- Spread infection and update health for all patients ---
+        # Spread infection and update health for all patients
         self._spread_infection()
 
         # --- First admission pass ---
@@ -163,10 +163,10 @@ class HealthcareSimulation:
         for patient in needs_admission:
             self._try_admit_patient(patient)
 
-        # --- Treat admitted infected patients ---
+        # Treat admitted infected patients
         self._treat_patients()
 
-        # --- Handle discharges ---
+        # Handle discharges
         # filter() to find patients who can be discharged
         can_discharge = list(filter(
             lambda p: p.admitted and p.health_status in ("Healthy", "Deceased"),
@@ -176,7 +176,7 @@ class HealthcareSimulation:
         for patient in can_discharge:
             self._discharge_patient(patient)
 
-        # --- Second admission pass (fill beds freed by discharges) ---
+        # Second admission pass (fill beds freed by discharges)
         # filter() to find infected patients still waiting after discharges
         still_waiting = list(filter(
             lambda p: p.health_status == "Infected"
@@ -320,24 +320,6 @@ class HealthcareSimulation:
         matches = [d for d in self.doctors if d.id == doctor_id]
         return matches[0] if matches else None
 
-    def _get_health_updates(self) -> dict:
-        """
-        Count patients in each health compartment.
-
-        Returns:
-            dict: Counts for healthy, infected, deceased, and total.
-        """
-        healthy = len([p for p in self.patients if p.health_status == "Healthy"])
-        infected = len([p for p in self.patients if p.health_status == "Infected"])
-        deceased = len([p for p in self.patients if p.health_status == "Deceased"])
-
-        return {
-            "healthy": healthy,
-            "infected": infected,
-            "deceased": deceased,
-            "total": len(self.patients),
-        }
-
     def _get_pandemic_stats(self) -> dict:
         """
         Build the pandemic statistics block for API responses.
@@ -401,7 +383,7 @@ class HealthcareSimulation:
         # map() to convert pharmacies to dicts
         pharmacies_data = list(map(lambda p: p.to_dict(), self.pharmacies))
 
-        # --- Aggregate stats using reduce() ---
+        # Aggregate stats using reduce()
         total_occupied = reduce(
             lambda acc, h: acc + h.occupied_beds,
             self.hospitals, 0
@@ -437,7 +419,6 @@ class HealthcareSimulation:
             "hospitals": hospitals_data,
             "pharmacies": pharmacies_data,
             "pandemic": self._get_pandemic_stats() if self.mode.is_pandemic else None,
-            "sir": self._get_health_updates() if self.mode.is_pandemic else None,
         }
 
     def reset(self) -> None:
